@@ -23,7 +23,7 @@ public class GridDataAuthoring : MonoBehaviour
                 cellSize = authoring.cellSize,
             });
 
-            AddComponent (entity, new IsBluePrintPendingTag());
+            AddComponent (entity, new IsBlueprintPendingTag());
 
         }
     }
@@ -38,4 +38,4 @@ public struct GridConfig : IComponentData
   
 }
 
-public struct IsBluePrintPendingTag : IComponentData, IEnableableComponent {}
+public struct IsBlueprintPendingTag : IComponentData, IEnableableComponent {}

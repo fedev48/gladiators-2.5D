@@ -32,11 +32,28 @@ public partial class InputReaderSystem : SystemBase
 
         foreach (var moveDirection in SystemAPI.Query<RefRW<MoveDirection>>().WithAll<PlayerTag>())
         {
-            moveDirection.ValueRW.value = new float3(cameraFixedDirection.x, 0, cameraFixedDirection.z);
+            moveDirection.ValueRW.Value = new float3(cameraFixedDirection.x, 0, cameraFixedDirection.z);
         }
 
         if (inputSystem.Player.Interact.WasPressedThisFrame())
         {
+            // float3 randomTarget = new float3(
+            //     UnityEngine.Random.Range(0, 100),
+            //     0f,
+            //     UnityEngine.Random.Range(0, 100));
+
+            // Entity testEntity = EntityManager.CreateEntity(
+            //     typeof(Unity.Transforms.LocalTransform),
+            //     typeof(NeedsPathfinding),
+            //     typeof(UsingPathfinding));
+
+            // EntityManager.SetComponentData(testEntity, Unity.Transforms.LocalTransform.Identity);
+            // EntityManager.SetComponentData(testEntity, new NeedsPathfinding { Destination = randomTarget });
+            // EntityManager.SetComponentEnabled<NeedsPathfinding>(testEntity, true);
+            // EntityManager.SetComponentEnabled<UsingPathfinding>(testEntity, false);
+
+            // if (GridDebugVisualizer.Instance != null) GridDebugVisualizer.Instance.MarkDirty();
+            // Debug.Log($"[FlowfieldTest] entity {testEntity.Index} -> target {randomTarget}");
             foreach ((RefRO<SkeletonSpellConfig> spellConfig, Entity entity) in
                 SystemAPI.Query<RefRO<SkeletonSpellConfig>>().WithEntityAccess())
             {
@@ -46,7 +63,7 @@ public partial class InputReaderSystem : SystemBase
                     timer     = 0f
                 });
                 EntityManager.SetComponentEnabled<SkeletonSpawnBurst>(entity, true);
-            }
+            }        
         }
 
         if (inputSystem.Player.Attack.WasPressedThisFrame())
@@ -58,6 +75,9 @@ public partial class InputReaderSystem : SystemBase
                 EntityManager.SetComponentEnabled<FireBulletEvent>(entity, true);
             }
         }
+
+        
+
     }
 
     protected override void OnStopRunning() => inputSystem.Disable();

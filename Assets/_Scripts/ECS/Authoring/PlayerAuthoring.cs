@@ -19,11 +19,11 @@ public class PlayerAuthoring : MonoBehaviour
 
             AddComponent(entity, new PlayerTag());
             AddComponent(entity, new UnitTag());
-            AddComponent(entity, new MoveSpeed     { value = authoring.playerSpeed });
+            AddComponent(entity, new MoveSpeed     { Value = authoring.playerSpeed });
             AddComponent(entity, new MoveDirection {});
             AddComponent(entity, new UnitMovementAnimTag());
             Entity visualEntity = GetEntity(authoring.GetComponentInChildren<SpriteAnimatorAuthoring>(), TransformUsageFlags.Dynamic);
-            AddComponent(entity, new VisualEntity { value = visualEntity });
+            AddComponent(entity, new VisualEntity { Value = visualEntity });
             AddComponent(entity, new ShouldSnapToFloorTag());
             AddComponent(entity, new PhysicsGravityFactor { Value = 0f });
             AddComponent(entity, new SummonSkeletonEvent());

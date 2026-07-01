@@ -25,14 +25,14 @@ public partial struct MovementAnimationSystem : ISystem
             SystemAPI.Query<RefRO<MoveDirection>, RefRO<VisualEntity>>()
                 .WithAll<UnitMovementAnimTag>().WithEntityAccess())
         {
-            Entity visualEntity = visual.ValueRO.value;
+            Entity visualEntity = visual.ValueRO.Value;
 
             if (_oneShotLookup.IsComponentEnabled(visualEntity)) continue;
             if (!_animLookup.HasComponent(visualEntity))         continue;
 
             RefRW<SpriteAnimationState> animState = _animLookup.GetRefRW(visualEntity);
 
-            float3 worldDir = moveDir.ValueRO.value;
+            float3 worldDir = moveDir.ValueRO.Value;
             bool   moving   = math.lengthsq(worldDir) > 0.01f;
 
             // Convert world-space direction to screen-space using baked inverse camera rotation

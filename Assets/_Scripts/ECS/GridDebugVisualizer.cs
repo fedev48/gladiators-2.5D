@@ -1,4 +1,6 @@
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class GridDebugVisualizer : MonoBehaviour
@@ -25,6 +27,8 @@ public class GridDebugVisualizer : MonoBehaviour
 
     void OnValidate() => dirty = true;
 
+    public void MarkDirty() => dirty = true;
+
     void Update()
     {
         if (!dirty) return;
@@ -38,43 +42,60 @@ public class GridDebugVisualizer : MonoBehaviour
         if (world == null) return;
         var em = world.EntityManager;
 
-        var configQuery = em.CreateEntityQuery(typeof(GridConfig));
-        if (configQuery.IsEmpty) { configQuery.Dispose(); return; }
+        using var configQuery = new EntityQueryBuilder(Allocator.Temp)
+            .WithAll<GridConfig>()
+            .Build(em);
+        if (configQuery.IsEmpty) return;
         GridConfig config = configQuery.GetSingleton<GridConfig>();
-        configQuery.Dispose();
 
         Entity gridEntity = FindGridEntity(em);
         if (gridEntity == Entity.Null) return;
+
+        int targetCellX = -1, targetCellY = -1;
+        if (viewMode == GridViewMode.FlowField)
+        {
+            using var ffQuery = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<FlowFieldMap>()
+                .WithAbsent<GridBlueprintTag>()
+                .Build(em);
+            using var ffEntities = ffQuery.ToEntityArray(Allocator.Temp);
+            foreach (var e in ffEntities)
+            {
+                FlowFieldMap ff = em.GetComponentData<FlowFieldMap>(e);
+                if (ff.FlowFieldId == flowFieldId)
+                {
+                    targetCellX = (int)(ff.Destination.x / config.cellSize) + 1;
+                    targetCellY = (int)(ff.Destination.z / config.cellSize) + 1;
+                    break;
+                }
+            }
+        }
 
         var cells = em.GetBuffer<CellComponents>(gridEntity, isReadOnly: true);
 
         visualRoot = new GameObject("DebugVisuals");
         visualRoot.transform.SetParent(transform);
 
-        int wallCount = 0;
         for (int i = 0; i < cells.Length; i++)
         {
             CellComponents cellData = cells[i];
             Vector3 center = new Vector3((cellData.x - 1) * config.cellSize, 0, (cellData.y - 1) * config.cellSize);
 
-            Vector3 pos = center;
-            GameObject cellObj = Instantiate(cellPrefab, pos, Quaternion.identity, visualRoot.transform);
+            GameObject cellObj = Instantiate(cellPrefab, center, Quaternion.identity, visualRoot.transform);
             cellObj.transform.localScale = Vector3.one * config.cellSize;
 
-            bool isWall = cellData.cost == int.MaxValue;
-            if (isWall) wallCount++;
+            bool isWall   = cellData.cost == int.MaxValue;
+            bool isTarget = cellData.x == targetCellX && cellData.y == targetCellY;
 
             SpriteRenderer sr = cellObj.GetComponentInChildren<SpriteRenderer>();
             if (sr != null)
             {
-                sr.color = isWall ? Color.black : Color.white;
+                sr.color = isWall ? Color.black : isTarget ? Color.blue : Color.white;
                 SnapToGround(cellObj, sr.transform.position, config.cellSize);
             }
             else
                 Debug.LogWarning($"GridDebugVisualizer: SpriteRenderer no encontrado en hijo del prefab (celda {i})");
         }
-
-       
 
         dirty = false;
     }
@@ -83,19 +104,20 @@ public class GridDebugVisualizer : MonoBehaviour
     {
         if (viewMode == GridViewMode.Blueprint)
         {
-            var q = em.CreateEntityQuery(typeof(GridBlueprintTag), typeof(CellComponents));
-            if (q.IsEmpty) { q.Dispose(); return Entity.Null; }
-            Entity e = q.GetSingletonEntity();
-            q.Dispose();
-            return e;
+            using var q = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<GridBlueprintTag, CellComponents>()
+                .Build(em);
+            if (q.IsEmpty) return Entity.Null;
+            return q.GetSingletonEntity();
         }
         else
         {
-            var q = em.CreateEntityQuery(typeof(FlowFieldMap), typeof(CellComponents));
-            if (q.IsEmpty) { q.Dispose(); return Entity.Null; }
+            using var q = new EntityQueryBuilder(Allocator.Temp)
+                .WithAll<FlowFieldMap, CellComponents>()
+                .Build(em);
+            if (q.IsEmpty) return Entity.Null;
 
-            using var entities = q.ToEntityArray(Unity.Collections.Allocator.Temp);
-            q.Dispose();
+            using var entities = q.ToEntityArray(Allocator.Temp);
             foreach (var e in entities)
             {
                 if (em.GetComponentData<FlowFieldMap>(e).FlowFieldId == flowFieldId)
@@ -123,7 +145,7 @@ public class GridDebugVisualizer : MonoBehaviour
                 && hit.point.y >= 0f && hit.point.y <= 2f)
                 hits[c] = new Vector3(corners[c].x, hit.point.y, corners[c].z);
             else
-                return; // alguna esquina no pegó en suelo válido, no snapear
+                return;
         }
 
         Vector3 normal = Vector3.Cross(hits[1] - hits[0], hits[2] - hits[0]).normalized;

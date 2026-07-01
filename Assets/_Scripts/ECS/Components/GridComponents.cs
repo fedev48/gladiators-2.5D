@@ -3,12 +3,10 @@ using Unity.Entities;
 using Unity.Mathematics;
 
 
-public struct GridBlueprintTag : IComponentData { }
+public struct GridBlueprintTag    : IComponentData { }
+
 public struct FlowFieldMap : IComponentData
 {
-    public int FlowFieldId;
-    public float3 destination;
+    public int    FlowFieldId;
+    public float3 Destination;
 }
-
-// public struct DirtyFlowFieldMap : IComponentData, IEnableableComponent { }
-

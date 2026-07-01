@@ -28,7 +28,7 @@ public partial struct SkeletonFollowSystem : ISystem
                             RefRO<SkeletonConfig>,
                             RefRW<MoveDirection>,
                             RefRW<MoveSpeed>>()
-                .WithAll<SkeletonFollowState>())
+                .WithAll<FollowState>())
         {
             if (spawnData.ValueRO.followOffset.Equals(float3.zero))
                 spawnData.ValueRW.followOffset = transform.ValueRO.Position - playerPos;
@@ -40,7 +40,7 @@ public partial struct SkeletonFollowSystem : ISystem
             float  dist         = math.length(toTarget);
             float3 direction    = math.normalizesafe(toTarget);
             float  acceleration = config.ValueRO.acceleration;
-            float  currentSpeed = moveSpeed.ValueRO.value;
+            float  currentSpeed = moveSpeed.ValueRO.Value;
 
             float stoppingDist = currentSpeed * currentSpeed / (2f * acceleration);
 
@@ -49,8 +49,8 @@ public partial struct SkeletonFollowSystem : ISystem
             else
                 currentSpeed = math.max(currentSpeed - acceleration * dt, 0f);
 
-            moveDir.ValueRW.value   = currentSpeed > 0.01f ? direction : float3.zero;
-            moveSpeed.ValueRW.value = currentSpeed;
+            moveDir.ValueRW.Value   = currentSpeed > 0.01f ? direction : float3.zero;
+            moveSpeed.ValueRW.Value = currentSpeed;
 
             transform.ValueRW.Rotation = quaternion.identity;
         }

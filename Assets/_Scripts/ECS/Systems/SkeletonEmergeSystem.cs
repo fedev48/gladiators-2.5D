@@ -23,7 +23,7 @@ public partial struct SkeletonEmergeSystem : ISystem
                                  RefRW<SkeletonSpawnData>,
                                  RefRO<PhysicsCollider>,
                                  RefRW<PhysicsVelocity>>()
-                     .WithAll<SkeletonSpawnState>()
+                     .WithAll<SpawnState>()
                      .WithEntityAccess())
         {
             if (spawnData.ValueRO.height == 0f)
@@ -52,8 +52,8 @@ public partial struct SkeletonEmergeSystem : ISystem
             if (newY >= targetY)
             {
                 transform.ValueRW.Position = spawnData.ValueRO.surfacePos;
-                state.EntityManager.SetComponentEnabled<SkeletonSpawnState>(entity, false);
-                state.EntityManager.SetComponentEnabled<SkeletonFollowState>(entity, true);
+                state.EntityManager.SetComponentEnabled<SpawnState>(entity, false);
+                state.EntityManager.SetComponentEnabled<FollowState>(entity, true);
                 state.EntityManager.SetComponentEnabled<ShouldSnapToFloorTag>(entity, true);
             }
         }
@@ -61,7 +61,7 @@ public partial struct SkeletonEmergeSystem : ISystem
         // Animación de emerge — solo si el skeleton tiene SpriteAnimationState
         foreach (var animState in
             SystemAPI.Query<RefRW<SpriteAnimationState>>()
-                .WithAll<SkeletonSpawnState, SkeletonTag>())
+                .WithAll<SpawnState, SkeletonTag>())
         {
             animState.ValueRW.currentAnimation = 8; // emerge
         }

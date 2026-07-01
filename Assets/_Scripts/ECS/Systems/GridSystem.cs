@@ -23,13 +23,13 @@ partial struct GridSystem : ISystem
         EntityCommandBuffer entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
         foreach ((RefRO<GridConfig> config, Entity entity) in
             SystemAPI.Query<RefRO<GridConfig>>()
-                .WithAll<IsBluePrintPendingTag>()
+                .WithAll<IsBlueprintPendingTag>()
                 .WithEntityAccess())
         {
             
             Entity gridEntity = entityCommandBuffer.CreateEntity();
 
-            entityCommandBuffer.AddComponent(gridEntity, new FlowFieldMap { FlowFieldId = 0, destination = Unity.Mathematics.float3.zero });
+            entityCommandBuffer.AddComponent(gridEntity, new FlowFieldMap { FlowFieldId = 0, Destination = Unity.Mathematics.float3.zero });
             entityCommandBuffer.AddComponent(gridEntity, new GridBlueprintTag());
             entityCommandBuffer.SetName(gridEntity, "GridBlueprint");
 
@@ -44,7 +44,7 @@ partial struct GridSystem : ISystem
                 {
                     int cost = 1;
                    
-                    if (IsOnWall(GridToWorldPosition(x, y, config.ValueRO),config.ValueRO.cellSize,collisionWorld))
+                    if (IsOnWall(GridToWorldPosition(x, y, config.ValueRO),collisionWorld, wallLayerMask, config.ValueRO.cellSize))
                     {
                         cost = WALL_COST;
                     }
@@ -52,7 +52,7 @@ partial struct GridSystem : ISystem
                     buffer.Add(new CellComponents 
                     { 
                         cost = cost, 
-                        bestCost = WALL_COST, 
+                        bestCost = -1, 
                         x = x+1, 
                         y = y+1     
                     });
@@ -60,7 +60,7 @@ partial struct GridSystem : ISystem
                 }
             }
 
-            entityCommandBuffer.SetComponentEnabled<IsBluePrintPendingTag>(entity, false);
+            entityCommandBuffer.SetComponentEnabled<IsBlueprintPendingTag>(entity, false);
         }
         entityCommandBuffer.Playback(state.EntityManager);
         entityCommandBuffer.Dispose();
@@ -71,9 +71,17 @@ partial struct GridSystem : ISystem
     {
         
     }
-    public bool IsOnWall(float3 position, float size, CollisionWorld collisionWorld)
+    public static bool IsOnWall(float3 position, CollisionWorld collisionWorld, uint wallLayerMask,  float size = 0)
     {
-        float3 centeredPosition = new float3(position.x + size * 0.5f, position.y, position.z + size * 0.5f);
+        float3 centeredPosition;
+        if (size!=0)
+        {
+            centeredPosition = new float3(position.x + size * 0.5f, position.y, position.z + size * 0.5f);
+        }
+        else
+        {
+            centeredPosition = position;
+        }
         
         NativeList<DistanceHit> hits = new NativeList<DistanceHit>(Allocator.Temp);
         CollisionFilter filter = new CollisionFilter
