@@ -4463,7 +4463,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridDebugVisualizer
   cellPrefab: {fileID: 8733615188156379025, guid: 9e72ad728d76b4b8dad4df89505bc2e4, type: 3}
-  debugMode: 0
+  debugMode: 1
   viewMode: 0
   flowFieldId: 0
 --- !u!4 &1604605560

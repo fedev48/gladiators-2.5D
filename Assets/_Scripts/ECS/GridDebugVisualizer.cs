@@ -42,9 +42,7 @@ public class GridDebugVisualizer : MonoBehaviour
         if (world == null) return;
         var em = world.EntityManager;
 
-        using var configQuery = new EntityQueryBuilder(Allocator.Temp)
-            .WithAll<GridConfig>()
-            .Build(em);
+        using var configQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<GridConfig>().Build(em);
         if (configQuery.IsEmpty) return;
         GridConfig config = configQuery.GetSingleton<GridConfig>();
 
@@ -64,8 +62,8 @@ public class GridDebugVisualizer : MonoBehaviour
                 FlowFieldMap ff = em.GetComponentData<FlowFieldMap>(e);
                 if (ff.FlowFieldId == flowFieldId)
                 {
-                    targetCellX = (int)(ff.Destination.x / config.cellSize) + 1;
-                    targetCellY = (int)(ff.Destination.z / config.cellSize) + 1;
+                    targetCellX = (int)(ff.Destination.x / config.cellSize);
+                    targetCellY = (int)(ff.Destination.z / config.cellSize);
                     break;
                 }
             }
@@ -79,13 +77,14 @@ public class GridDebugVisualizer : MonoBehaviour
         for (int i = 0; i < cells.Length; i++)
         {
             CellComponents cellData = cells[i];
-            Vector3 center = new Vector3((cellData.x - 1) * config.cellSize, 0, (cellData.y - 1) * config.cellSize);
+            int2 cell   = GridSystem.IndexToCell(i, config);
+            Vector3 center = new Vector3(cell.x * config.cellSize, 0, cell.y * config.cellSize);
 
             GameObject cellObj = Instantiate(cellPrefab, center, Quaternion.identity, visualRoot.transform);
             cellObj.transform.localScale = Vector3.one * config.cellSize;
 
             bool isWall   = cellData.cost == int.MaxValue;
-            bool isTarget = cellData.x == targetCellX && cellData.y == targetCellY;
+            bool isTarget = i == GridSystem.CoordsToIndex(targetCellX, targetCellY, config);
 
             SpriteRenderer sr = cellObj.GetComponentInChildren<SpriteRenderer>();
             if (sr != null)

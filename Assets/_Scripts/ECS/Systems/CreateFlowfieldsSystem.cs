@@ -1,6 +1,8 @@
+using System.Linq;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Entities.UniversalDelegates;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
@@ -108,7 +110,7 @@ partial struct CreateFlowfieldsSystem : ISystem
                 Entity recycledFlowField = flowFieldPool.Dequeue();
                 assignedId = state.EntityManager.GetComponentData<FlowFieldMap>(recycledFlowField).FlowFieldId;
                 state.EntityManager.SetComponentData(recycledFlowField, new FlowFieldMap { FlowFieldId = assignedId, Destination = destination });
-                // todo: calculate paths
+                CalculateIntegrationField(ref state, recycledFlowField);
                 flowFieldPool.Enqueue(recycledFlowField);
             }
             else
@@ -117,7 +119,7 @@ partial struct CreateFlowfieldsSystem : ISystem
                 Entity newFlowField = state.EntityManager.Instantiate(blueprintEntity);
                 state.EntityManager.RemoveComponent<GridBlueprintTag>(newFlowField);
                 state.EntityManager.SetComponentData(newFlowField, new FlowFieldMap { FlowFieldId = assignedId, Destination = destination });
-                // todo: calculate paths
+                CalculateIntegrationField(ref state, newFlowField);
                 flowFieldPool.Enqueue(newFlowField);
             }
 
@@ -138,9 +140,75 @@ partial struct CreateFlowfieldsSystem : ISystem
         destinationToId.Dispose();
     }
 
+    void CalculateIntegrationField(ref SystemState state, Entity flowFieldParentEntity)
+    {
+        GridConfig config = SystemAPI.GetSingleton<GridConfig>();
+        FlowFieldMap flowFieldMap = SystemAPI.GetComponent<FlowFieldMap>(flowFieldParentEntity);
+        DynamicBuffer<CellComponents> cellComponents = SystemAPI.GetBuffer<CellComponents>(flowFieldParentEntity);
+        int2 targetCell = GridSystem.WorldPosToGrid(flowFieldMap.Destination, config);
+        UnityEngine.Debug.Log($"target world: {flowFieldMap.Destination}, grid: {targetCell}, config: {config.width}x{config.height}");
+        int flatTargetIndex = GridSystem.CoordsToIndex(targetCell.x, targetCell.y, config);
+        ref CellComponents cell = ref cellComponents.ElementAt(flatTargetIndex);
+        cell.bestCost = 0;
+        cell.cost = 0;
+        NativeQueue<int> nativeQueueCoords = new(Allocator.Temp);
+        nativeQueueCoords.Enqueue(flatTargetIndex);
+
+        int securityCount = 0;
+
+        while (nativeQueueCoords.Count!=0 && securityCount<10000)
+        {
+            int nextIndex = nativeQueueCoords.Dequeue();
+            ProcessList(cellComponents, nextIndex, GridSystem.IndexToCell(nextIndex, config), nativeQueueCoords, config);
+            securityCount++;
+        }
+
+        nativeQueueCoords.Dispose();
+    }
+
+    private void ProcessList(DynamicBuffer<CellComponents> cellComponents, int currentIndex, int2 targetCell, NativeQueue<int> nativeQueueCoords, GridConfig config)
+    {
+        int2[] surroundingCellsCoords = GetSurroundingCells(targetCell);
+
+        foreach (int2 cell in surroundingCellsCoords)
+        {
+            if (!CheckIfIndexIsInBounds(cell, config)) continue;
+            ref CellComponents cellElement = ref cellComponents.ElementAt(GridSystem.CoordsToIndex(cell.x, cell.y, config));
+            if (cellElement.bestCost != -1) continue;
+            cellElement.bestCost = cellComponents[currentIndex].bestCost + cellElement.cost;
+            nativeQueueCoords.Enqueue(GridSystem.CoordsToIndex(cell.x, cell.y, config));
+        }
+    }
+
+    private bool CheckIfIndexIsInBounds(int2 cell, GridConfig config)
+    {
+        if (cell.x < 0 || cell.x >= config.width || cell.y < 0 || cell.y >= config.height) return false;
+        return true;
+    }
+
+    int2[] GetSurroundingCells(int2 cellCoords)
+    {
+        
+        int2[] surroundingCoords = new int2[8];
+
+        int write = 0;
+
+        for (int i = 0; i < 9; i++)
+        {
+            int dx = (i % 3) - 1;
+            int dy = (i / 3) - 1;
+            if (dx == 0 && dy == 0) continue;
+            surroundingCoords[write++] = new(cellCoords.x + dx, cellCoords.y + dy);
+        }
+
+        return surroundingCoords;
+    }
+
     [BurstCompile]
     public void OnDestroy(ref SystemState state)
     {
         flowFieldPool.Dispose();
     }
+
+
 }

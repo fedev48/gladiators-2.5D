@@ -17,9 +17,8 @@ partial struct GridSystem : ISystem
         state.RequireForUpdate<GridConfig>();
     }
 
-    [BurstCompile]
     public void OnUpdate(ref SystemState state)
-    { 
+    {
         EntityCommandBuffer entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
         foreach ((RefRO<GridConfig> config, Entity entity) in
             SystemAPI.Query<RefRO<GridConfig>>()
@@ -49,12 +48,10 @@ partial struct GridSystem : ISystem
                         cost = WALL_COST;
                     }
 
-                    buffer.Add(new CellComponents 
-                    { 
-                        cost = cost, 
-                        bestCost = -1, 
-                        x = x+1, 
-                        y = y+1     
+                    buffer.Add(new CellComponents
+                    {
+                        cost = cost,
+                        bestCost = -1,
                     });
 
                 }
@@ -98,8 +95,17 @@ partial struct GridSystem : ISystem
 
     public static float3 GridToWorldPosition(int x, int y, GridConfig gridConfig)
     {
-        return new float3 (x*gridConfig.cellSize, 0 , y*gridConfig.cellSize);
+        return new float3(x * gridConfig.cellSize, 0, y * gridConfig.cellSize);
     }
+
+    public static int2 WorldPosToGrid (float3 position, GridConfig gridConfig)
+    {
+        return new int2 ((int)(position.x/gridConfig.cellSize), (int)(position.z/gridConfig.cellSize));
+    }
+
+    public static int CoordsToIndex(int x, int y, GridConfig config) => y * config.width + x;
+
+    public static int2 IndexToCell(int index, GridConfig config) => new(index % config.width, index / config.width);
 }
 
 

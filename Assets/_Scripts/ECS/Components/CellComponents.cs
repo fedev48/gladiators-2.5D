@@ -4,8 +4,6 @@ using UnityEngine;
 
 public struct CellComponents : IBufferElementData
 {
-    public int x;
-    public int y;
     public int cost;
     public int bestCost;
     public float2 movingVector;
