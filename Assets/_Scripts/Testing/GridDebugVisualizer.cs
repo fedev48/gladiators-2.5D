@@ -13,6 +13,7 @@ public class GridDebugVisualizer : MonoBehaviour
     [SerializeField] bool debugMode = true;
     [SerializeField] GridViewMode viewMode = GridViewMode.Blueprint;
     [SerializeField] int flowFieldId = 0;
+    [SerializeField] CellDebugView.DisplayMode cellDisplayMode = CellDebugView.DisplayMode.Default;
 
     bool dirty = true;
     GameObject visualRoot;
@@ -77,7 +78,7 @@ public class GridDebugVisualizer : MonoBehaviour
         for (int i = 0; i < cells.Length; i++)
         {
             CellComponents cellData = cells[i];
-            int2 cell   = GridSystem.IndexToCell(i, config);
+            int2    cell   = GridSystem.IndexToCoords(i, config);
             Vector3 center = new Vector3(cell.x * config.cellSize, 0, cell.y * config.cellSize);
 
             GameObject cellObj = Instantiate(cellPrefab, center, Quaternion.identity, visualRoot.transform);
@@ -86,14 +87,13 @@ public class GridDebugVisualizer : MonoBehaviour
             bool isWall   = cellData.cost == int.MaxValue;
             bool isTarget = i == GridSystem.CoordsToIndex(targetCellX, targetCellY, config);
 
-            SpriteRenderer sr = cellObj.GetComponentInChildren<SpriteRenderer>();
-            if (sr != null)
+            var view = cellObj.GetComponent<CellDebugView>();
+            if (view != null)
             {
-                sr.color = isWall ? Color.black : isTarget ? Color.blue : Color.white;
-                SnapToGround(cellObj, sr.transform.position, config.cellSize);
+                SnapToGround(cellObj, cellObj.transform.position, config.cellSize);
+                Color color = isWall ? Color.black : isTarget ? Color.blue : Color.white;
+                view.Show(color, isWall ? CellDebugView.DisplayMode.Default : cellDisplayMode, cellData.movingVector, cellData.bestCost, isTarget);
             }
-            else
-                Debug.LogWarning($"GridDebugVisualizer: SpriteRenderer no encontrado en hijo del prefab (celda {i})");
         }
 
         dirty = false;

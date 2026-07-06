@@ -43,7 +43,7 @@ partial struct GridSystem : ISystem
                 {
                     int cost = 1;
                    
-                    if (IsOnWall(GridToWorldPosition(x, y, config.ValueRO),collisionWorld, wallLayerMask, config.ValueRO.cellSize))
+                    if (IsOnWall(CoordsToWorldPosition(x, y, config.ValueRO),collisionWorld, wallLayerMask, config.ValueRO.cellSize))
                     {
                         cost = WALL_COST;
                     }
@@ -93,9 +93,15 @@ partial struct GridSystem : ISystem
         return isWall;
     }
 
-    public static float3 GridToWorldPosition(int x, int y, GridConfig gridConfig)
+    public static float3 CoordsToWorldPosition(int x, int y, GridConfig gridConfig)
     {
         return new float3(x * gridConfig.cellSize, 0, y * gridConfig.cellSize);
+    }
+
+    public static float3 FlatIndexToWorldPosition(int cellFlatIndex, GridConfig gridConfig)
+    {
+        int2 coords = IndexToCoords(cellFlatIndex, gridConfig);
+        return new float3(CoordsToWorldPosition(coords.x, coords.y, gridConfig));
     }
 
     public static int2 WorldPosToGrid (float3 position, GridConfig gridConfig)
@@ -105,7 +111,7 @@ partial struct GridSystem : ISystem
 
     public static int CoordsToIndex(int x, int y, GridConfig config) => y * config.width + x;
 
-    public static int2 IndexToCell(int index, GridConfig config) => new(index % config.width, index / config.width);
+    public static int2 IndexToCoords(int index, GridConfig config) => new(index % config.width, index / config.width);
 }
 
 

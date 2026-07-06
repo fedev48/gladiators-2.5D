@@ -8,6 +8,7 @@ public struct CellComponents : IBufferElementData
     public int bestCost;
     public float2 movingVector;
     public int currentBuriedBodies;
+    
 }
 
 

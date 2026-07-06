@@ -1,4 +1,6 @@
 using System.Linq;
+using System.Numerics;
+using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -10,7 +12,7 @@ using Unity.Transforms;
 
 [UpdateInGroup(typeof(PhysicsSystemGroup))]
 [UpdateAfter(typeof(PhysicsInitializeGroup))]
-partial struct CreateFlowfieldsSystem : ISystem
+partial struct FlowfieldsSystem : ISystem
 {
     uint wallLayerMask;
     NativeQueue<Entity> flowFieldPool;
@@ -68,7 +70,7 @@ partial struct CreateFlowfieldsSystem : ISystem
             if (skipPathfinding)
             {
                 state.EntityManager.SetComponentEnabled<UsingPathfinding>(entity, false);
-                continue; // no pathfinding needed because of line of sight o invalid target, en este punto la unidad no sigue ningun path asi que lo desactivamos por si era un override
+                continue; // no pathfinding needed because of line of sight o invalid target, at this point we need to disable the tag for the pathfinding following in case this is an override and the PF is no longer needed
             }
 
             bool flowFieldToTargetExists = false;
@@ -111,6 +113,7 @@ partial struct CreateFlowfieldsSystem : ISystem
                 assignedId = state.EntityManager.GetComponentData<FlowFieldMap>(recycledFlowField).FlowFieldId;
                 state.EntityManager.SetComponentData(recycledFlowField, new FlowFieldMap { FlowFieldId = assignedId, Destination = destination });
                 CalculateIntegrationField(ref state, recycledFlowField);
+                CalculateVectorField(ref state, recycledFlowField);
                 flowFieldPool.Enqueue(recycledFlowField);
             }
             else
@@ -120,6 +123,7 @@ partial struct CreateFlowfieldsSystem : ISystem
                 state.EntityManager.RemoveComponent<GridBlueprintTag>(newFlowField);
                 state.EntityManager.SetComponentData(newFlowField, new FlowFieldMap { FlowFieldId = assignedId, Destination = destination });
                 CalculateIntegrationField(ref state, newFlowField);
+                CalculateVectorField(ref state, newFlowField);
                 flowFieldPool.Enqueue(newFlowField);
             }
 
@@ -146,7 +150,6 @@ partial struct CreateFlowfieldsSystem : ISystem
         FlowFieldMap flowFieldMap = SystemAPI.GetComponent<FlowFieldMap>(flowFieldParentEntity);
         DynamicBuffer<CellComponents> cellComponents = SystemAPI.GetBuffer<CellComponents>(flowFieldParentEntity);
         int2 targetCell = GridSystem.WorldPosToGrid(flowFieldMap.Destination, config);
-        UnityEngine.Debug.Log($"target world: {flowFieldMap.Destination}, grid: {targetCell}, config: {config.width}x{config.height}");
         int flatTargetIndex = GridSystem.CoordsToIndex(targetCell.x, targetCell.y, config);
         ref CellComponents cell = ref cellComponents.ElementAt(flatTargetIndex);
         cell.bestCost = 0;
@@ -159,24 +162,64 @@ partial struct CreateFlowfieldsSystem : ISystem
         while (nativeQueueCoords.Count!=0 && securityCount<10000)
         {
             int nextIndex = nativeQueueCoords.Dequeue();
-            ProcessList(cellComponents, nextIndex, GridSystem.IndexToCell(nextIndex, config), nativeQueueCoords, config);
+            ProcessCurrentGridNeighbours(cellComponents, nextIndex, GridSystem.IndexToCoords(nextIndex, config), nativeQueueCoords, config);
             securityCount++;
         }
-
         nativeQueueCoords.Dispose();
     }
 
-    private void ProcessList(DynamicBuffer<CellComponents> cellComponents, int currentIndex, int2 targetCell, NativeQueue<int> nativeQueueCoords, GridConfig config)
+    void CalculateVectorField(ref SystemState state, Entity flowFieldParentEntity)
+    {
+        DynamicBuffer<CellComponents> cellComponents = SystemAPI.GetBuffer<CellComponents>(flowFieldParentEntity);
+        GridConfig config = SystemAPI.GetSingleton<GridConfig>();
+
+        for (int i = 0; i < cellComponents.Length; i++)
+        {
+            int2[] surroundingCellsCoords = GetSurroundingCells(GridSystem.IndexToCoords(i, config));
+            int lowestCost = 10000;
+            int lowestCostCell = -1;
+
+            for (int j = 0; j < surroundingCellsCoords.Length; j++)
+            {
+                if (!CheckIfIndexIsInBounds(surroundingCellsCoords[j], config)) continue;
+                int flatTargetIndex = GridSystem.CoordsToIndex(surroundingCellsCoords[j].x, surroundingCellsCoords[j].y, config);
+                ref CellComponents cell = ref cellComponents.ElementAt(flatTargetIndex);
+                if (cell.bestCost >= 0 && cell.bestCost<lowestCost)
+                {
+                    lowestCost = cell.bestCost;
+                    lowestCostCell = flatTargetIndex;
+                }
+            }
+
+            ref CellComponents targetCell = ref cellComponents.ElementAt(i);
+
+            if (lowestCostCell != -1 && targetCell.cost != 0)
+            {
+                targetCell.movingVector = CalculateMoveVectorForField(i, lowestCostCell, config);
+            }
+
+            
+        }
+    }
+
+    
+    float2 CalculateMoveVectorForField(int originFlatIndex, int destinyFlatIndex, GridConfig gridConfig)
+    {
+        float3 cellFloat3 = GridSystem.FlatIndexToWorldPosition(destinyFlatIndex, gridConfig) - GridSystem.FlatIndexToWorldPosition(originFlatIndex, gridConfig);
+
+        return new float2 (cellFloat3.x, cellFloat3.z);
+    }
+    private void ProcessCurrentGridNeighbours(DynamicBuffer<CellComponents> cellComponents, int currentIndex, int2 targetCell, NativeQueue<int> nativeQueueCoords, GridConfig config)
     {
         int2[] surroundingCellsCoords = GetSurroundingCells(targetCell);
 
         foreach (int2 cell in surroundingCellsCoords)
         {
             if (!CheckIfIndexIsInBounds(cell, config)) continue;
-            ref CellComponents cellElement = ref cellComponents.ElementAt(GridSystem.CoordsToIndex(cell.x, cell.y, config));
-            if (cellElement.bestCost != -1) continue;
+            ref CellComponents cellElement = ref cellComponents.ElementAt(GridSystem.CoordsToIndex(cell.x, cell.y, config)); //grab references from coords
+            if (cellElement.cost == GridSystem.WALL_COST || cellElement.bestCost != -1) continue;
             cellElement.bestCost = cellComponents[currentIndex].bestCost + cellElement.cost;
-            nativeQueueCoords.Enqueue(GridSystem.CoordsToIndex(cell.x, cell.y, config));
+            nativeQueueCoords.Enqueue(GridSystem.CoordsToIndex(cell.x, cell.y, config)); //Sets the neighbours as new targets to continue processing, maybe could be done in the while to make it more clear
         }
     }
 
@@ -197,11 +240,11 @@ partial struct CreateFlowfieldsSystem : ISystem
         {
             int dx = (i % 3) - 1;
             int dy = (i / 3) - 1;
-            if (dx == 0 && dy == 0) continue;
-            surroundingCoords[write++] = new(cellCoords.x + dx, cellCoords.y + dy);
+            if (dx == 0 && dy == 0) continue; //skip the target itself, that's why we also need a separated write value, cant use the iteration variable
+            surroundingCoords[write++] = new(cellCoords.x + dx, cellCoords.y + dy); //starting with -1,-1
         }
 
-        return surroundingCoords;
+        return surroundingCoords; //this is just a coords list
     }
 
     [BurstCompile]
