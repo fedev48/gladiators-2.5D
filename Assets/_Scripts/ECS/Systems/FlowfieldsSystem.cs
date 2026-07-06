@@ -112,7 +112,7 @@ partial struct FlowfieldsSystem : ISystem
                 Entity recycledFlowField = flowFieldPool.Dequeue();
                 assignedId = state.EntityManager.GetComponentData<FlowFieldMap>(recycledFlowField).FlowFieldId;
                 state.EntityManager.SetComponentData(recycledFlowField, new FlowFieldMap { FlowFieldId = assignedId, Destination = destination });
-                CalculateIntegrationField(ref state, recycledFlowField);
+                CalculateIntegrationField(ref state, recycledFlowField, true);
                 CalculateVectorField(ref state, recycledFlowField);
                 flowFieldPool.Enqueue(recycledFlowField);
             }
@@ -144,11 +144,18 @@ partial struct FlowfieldsSystem : ISystem
         destinationToId.Dispose();
     }
 
-    void CalculateIntegrationField(ref SystemState state, Entity flowFieldParentEntity)
+    void CalculateIntegrationField(ref SystemState state, Entity flowFieldParentEntity, bool isRecycling = false)
     {
         GridConfig config = SystemAPI.GetSingleton<GridConfig>();
         FlowFieldMap flowFieldMap = SystemAPI.GetComponent<FlowFieldMap>(flowFieldParentEntity);
         DynamicBuffer<CellComponents> cellComponents = SystemAPI.GetBuffer<CellComponents>(flowFieldParentEntity);
+        if (isRecycling)
+        {
+            for (int i = 0; i < cellComponents.Length; i++)
+            {
+                cellComponents.ElementAt(i).bestCost = -1;
+            }
+        }
         int2 targetCell = GridSystem.WorldPosToGrid(flowFieldMap.Destination, config);
         int flatTargetIndex = GridSystem.CoordsToIndex(targetCell.x, targetCell.y, config);
         ref CellComponents cell = ref cellComponents.ElementAt(flatTargetIndex);
@@ -159,7 +166,7 @@ partial struct FlowfieldsSystem : ISystem
 
         int securityCount = 0;
 
-        while (nativeQueueCoords.Count!=0 && securityCount<10000)
+        while (nativeQueueCoords.Count!=0 && securityCount<cellComponents.Length*8)
         {
             int nextIndex = nativeQueueCoords.Dequeue();
             ProcessCurrentGridNeighbours(cellComponents, nextIndex, GridSystem.IndexToCoords(nextIndex, config), nativeQueueCoords, config);
@@ -184,7 +191,7 @@ partial struct FlowfieldsSystem : ISystem
                 if (!CheckIfIndexIsInBounds(surroundingCellsCoords[j], config)) continue;
                 int flatTargetIndex = GridSystem.CoordsToIndex(surroundingCellsCoords[j].x, surroundingCellsCoords[j].y, config);
                 ref CellComponents cell = ref cellComponents.ElementAt(flatTargetIndex);
-                if (cell.bestCost >= 0 && cell.bestCost<lowestCost)
+                if (cell.bestCost >= 0 && cell.bestCost<=lowestCost)
                 {
                     lowestCost = cell.bestCost;
                     lowestCostCell = flatTargetIndex;
@@ -211,15 +218,25 @@ partial struct FlowfieldsSystem : ISystem
     }
     private void ProcessCurrentGridNeighbours(DynamicBuffer<CellComponents> cellComponents, int currentIndex, int2 targetCell, NativeQueue<int> nativeQueueCoords, GridConfig config)
     {
+        
         int2[] surroundingCellsCoords = GetSurroundingCells(targetCell);
 
-        foreach (int2 cell in surroundingCellsCoords)
+        for (int i = 0; i < surroundingCellsCoords.Length; i++)
         {
+            int2 cell = surroundingCellsCoords[i];
             if (!CheckIfIndexIsInBounds(cell, config)) continue;
-            ref CellComponents cellElement = ref cellComponents.ElementAt(GridSystem.CoordsToIndex(cell.x, cell.y, config)); //grab references from coords
-            if (cellElement.cost == GridSystem.WALL_COST || cellElement.bestCost != -1) continue;
-            cellElement.bestCost = cellComponents[currentIndex].bestCost + cellElement.cost;
-            nativeQueueCoords.Enqueue(GridSystem.CoordsToIndex(cell.x, cell.y, config)); //Sets the neighbours as new targets to continue processing, maybe could be done in the while to make it more clear
+
+            int flatIndex = GridSystem.CoordsToIndex(cell.x, cell.y, config);
+            ref CellComponents cellElement = ref cellComponents.ElementAt(flatIndex);
+            if (cellElement.cost == GridSystem.WALL_COST) continue;
+
+            bool isDiagonal = i < 4 ? (i % 2 == 0) : (i % 2 != 0);
+            int candidateCost = cellComponents[currentIndex].bestCost + cellElement.cost * (isDiagonal ? 14 : 10);
+
+            if (cellElement.bestCost != -1 && cellElement.bestCost <= candidateCost) continue; //the allows to add again cells that were calculated in a more expensive path
+
+            cellElement.bestCost = candidateCost;
+            nativeQueueCoords.Enqueue(flatIndex);
         }
     }
 
