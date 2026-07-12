@@ -29,16 +29,20 @@ public partial struct SkeletonSpawnSystem : ISystem
 
         foreach ((RefRO<LocalTransform> transform,
                   RefRO<SkeletonSpellConfig> spellConfig,
+                  RefRO<SummonSkeletonEvent> summonEvent,
                   Entity entity) in
-            SystemAPI.Query<RefRO<LocalTransform>, RefRO<SkeletonSpellConfig>>()
+            SystemAPI.Query<RefRO<LocalTransform>, RefRO<SkeletonSpellConfig>, RefRO<SummonSkeletonEvent>>()
                 .WithAll<SummonSkeletonEvent>()
                 .WithEntityAccess())
         {
             float3 playerPos = transform.ValueRO.Position;
+            SkeletonConfig prefabConfig = SystemAPI.GetComponent<SkeletonConfig>(refs.skeletonPrefabEntity);
+            int count = math.max(1, summonEvent.ValueRO.count);
 
-            if (TryGetSpawnPosition(playerPos, spellConfig.ValueRO.minRadius, spellConfig.ValueRO.maxRadius, groundMask, ref random, out float3 spawnPos))
+            for (int i = 0; i < count; i++)
             {
-                SkeletonConfig prefabConfig = SystemAPI.GetComponent<SkeletonConfig>(refs.skeletonPrefabEntity);
+                if (!TryGetSpawnPosition(playerPos, spellConfig.ValueRO.minRadius, spellConfig.ValueRO.maxRadius, groundMask, ref random, out float3 spawnPos)) continue;
+
                 float acceleration = random.NextFloat(prefabConfig.accelerationMin, prefabConfig.accelerationMax);
 
                 Entity skeleton = ecb.Instantiate(refs.skeletonPrefabEntity);

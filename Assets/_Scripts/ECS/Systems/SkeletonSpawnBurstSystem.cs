@@ -22,6 +22,7 @@ public partial struct SkeletonSpawnBurstSystem : ISystem
             if (burst.ValueRO.timer > 0f)
                 continue;
 
+            SystemAPI.SetComponent(entity, new SummonSkeletonEvent { count = 1 });
             SystemAPI.SetComponentEnabled<SummonSkeletonEvent>(entity, true);
 
             burst.ValueRW.remaining--;

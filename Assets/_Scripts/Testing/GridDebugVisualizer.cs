@@ -14,10 +14,16 @@ public class GridDebugVisualizer : MonoBehaviour
     [SerializeField] GridViewMode viewMode = GridViewMode.Blueprint;
     [SerializeField] int flowFieldId = 0;
     [SerializeField] CellDebugView.DisplayMode cellDisplayMode = CellDebugView.DisplayMode.Default;
+    [SerializeField] bool drawGridInEditMode = true;
+    [SerializeField] float editModeGizmoY = 0.05f;
 
     bool dirty = true;
     GameObject visualRoot;
     int groundMask;
+
+    Entity trackedFlowField = Entity.Null;
+    int trackedDestinationCellIndex = -1;
+    float lastRecalcTime = -1f;
 
     void Awake()
     {
@@ -32,6 +38,8 @@ public class GridDebugVisualizer : MonoBehaviour
 
     void Update()
     {
+        CheckFlowFieldChanged();
+
         if (!dirty) return;
 
         ClearVisuals();
@@ -53,21 +61,10 @@ public class GridDebugVisualizer : MonoBehaviour
         int targetCellX = -1, targetCellY = -1;
         if (viewMode == GridViewMode.FlowField)
         {
-            using var ffQuery = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<FlowFieldMap>()
-                .WithAbsent<GridBlueprintTag>()
-                .Build(em);
-            using var ffEntities = ffQuery.ToEntityArray(Allocator.Temp);
-            foreach (var e in ffEntities)
-            {
-                FlowFieldMap ff = em.GetComponentData<FlowFieldMap>(e);
-                if (ff.FlowFieldId == flowFieldId)
-                {
-                    targetCellX = (int)(ff.Destination.x / config.cellSize);
-                    targetCellY = (int)(ff.Destination.z / config.cellSize);
-                    break;
-                }
-            }
+            FlowFieldMap ff = em.GetComponentData<FlowFieldMap>(gridEntity);
+            int2 targetCell = GridSystem.IndexToCoords(ff.DestinationCellIndex, config);
+            targetCellX = targetCell.x;
+            targetCellY = targetCell.y;
         }
 
         var cells = em.GetBuffer<CellComponents>(gridEntity, isReadOnly: true);
@@ -99,6 +96,40 @@ public class GridDebugVisualizer : MonoBehaviour
         dirty = false;
     }
 
+    void CheckFlowFieldChanged()
+    {
+        if (!debugMode || viewMode != GridViewMode.FlowField) return;
+
+        var world = World.DefaultGameObjectInjectionWorld;
+        if (world == null) return;
+        var em = world.EntityManager;
+
+        Entity gridEntity = FindGridEntity(em);
+        if (gridEntity == Entity.Null || !em.HasComponent<FlowFieldMap>(gridEntity)) return;
+
+        int destinationCellIndex = em.GetComponentData<FlowFieldMap>(gridEntity).DestinationCellIndex;
+
+        bool entityChanged      = gridEntity != trackedFlowField;
+        bool destinationChanged = destinationCellIndex != trackedDestinationCellIndex;
+        if (!entityChanged && !destinationChanged) return;
+
+        if (entityChanged)
+        {
+            Debug.Log($"FlowField {flowFieldId} en pantalla -> celda destino {destinationCellIndex}");
+            lastRecalcTime = Time.time;
+        }
+        else
+        {
+            Debug.Log($"FlowField {flowFieldId} recalculado -> celda destino {destinationCellIndex} " +
+                      $"({Time.time - lastRecalcTime:F2}s desde el recálculo anterior)");
+            lastRecalcTime = Time.time;
+        }
+
+        trackedFlowField            = gridEntity;
+        trackedDestinationCellIndex = destinationCellIndex;
+        dirty = true;
+    }
+
     Entity FindGridEntity(EntityManager em)
     {
         if (viewMode == GridViewMode.Blueprint)
@@ -112,17 +143,14 @@ public class GridDebugVisualizer : MonoBehaviour
         else
         {
             using var q = new EntityQueryBuilder(Allocator.Temp)
-                .WithAll<FlowFieldMap, CellComponents>()
+                .WithAll<FlowFieldPoolSingleton>()
+                .WithOptions(EntityQueryOptions.IncludeSystems)
                 .Build(em);
             if (q.IsEmpty) return Entity.Null;
 
-            using var entities = q.ToEntityArray(Allocator.Temp);
-            foreach (var e in entities)
-            {
-                if (em.GetComponentData<FlowFieldMap>(e).FlowFieldId == flowFieldId)
-                    return e;
-            }
-            return Entity.Null;
+            NativeList<Entity> pool = q.GetSingleton<FlowFieldPoolSingleton>().Pool;
+            if (flowFieldId < 0 || flowFieldId >= pool.Length) return Entity.Null;
+            return pool[flowFieldId];
         }
     }
 
@@ -160,5 +188,41 @@ public class GridDebugVisualizer : MonoBehaviour
     {
         if (visualRoot != null) Destroy(visualRoot);
         visualRoot = null;
+    }
+
+    void OnDrawGizmos()
+    {
+        if (Application.isPlaying || !drawGridInEditMode) return;
+
+        var authoring = FindFirstObjectByType<GridDataAuthoring>();
+        if (authoring == null) return;
+
+        GridConfig config = authoring.Config;
+        if (config.width <= 0 || config.height <= 0 || config.cellSize <= 0f) return;
+
+        int wallMask = LayerMask.GetMask("Walls");
+        float half = config.cellSize * 0.5f;
+        Vector3 cellFootprint = new Vector3(config.cellSize, 0.01f, config.cellSize);
+
+        for (int y = 0; y < config.height; y++)
+        {
+            for (int x = 0; x < config.width; x++)
+            {
+                //same convention as GridSystem.IsOnWall: the cell spans [coord, coord + cellSize), overlap test at its center
+                Vector3 corner = new Vector3(x * config.cellSize, editModeGizmoY, y * config.cellSize);
+                Vector3 center = corner + new Vector3(half, 0f, half);
+
+                bool isWall = Physics.CheckSphere(center, half, wallMask);
+
+                if (isWall)
+                {
+                    Gizmos.color = new Color(0f, 0f, 0f, 0.6f);
+                    Gizmos.DrawCube(center, cellFootprint);
+                }
+
+                Gizmos.color = isWall ? Color.black : new Color(1f, 1f, 1f, 0.25f);
+                Gizmos.DrawWireCube(center, cellFootprint);
+            }
+        }
     }
 }

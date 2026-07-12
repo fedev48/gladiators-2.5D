@@ -28,7 +28,7 @@ partial struct GridSystem : ISystem
             
             Entity gridEntity = entityCommandBuffer.CreateEntity();
 
-            entityCommandBuffer.AddComponent(gridEntity, new FlowFieldMap { FlowFieldId = 0, Destination = Unity.Mathematics.float3.zero });
+            entityCommandBuffer.AddComponent(gridEntity, new FlowFieldMap { FlowFieldId = 0, DestinationCellIndex = -1 }); //-1: the blueprint has no real destination, 0 would be a valid cell
             entityCommandBuffer.AddComponent(gridEntity, new GridBlueprintTag());
             entityCommandBuffer.SetName(gridEntity, "GridBlueprint");
 
@@ -104,14 +104,42 @@ partial struct GridSystem : ISystem
         return new float3(CoordsToWorldPosition(coords.x, coords.y, gridConfig));
     }
 
-    public static int2 WorldPosToGrid (float3 position, GridConfig gridConfig)
+    public static int2 WorldPosToCoords (float3 position, GridConfig gridConfig)
     {
         return new int2 ((int)(position.x/gridConfig.cellSize), (int)(position.z/gridConfig.cellSize));
+    }
+
+    public static int WorldPosToIndex(float3 position, GridConfig gridConfig)
+    {
+        int2 positionToCoords = WorldPosToCoords(position, gridConfig);
+        return CoordsToIndex(positionToCoords.x, positionToCoords.y, gridConfig);
+    }
+
+    public static bool CheckIfCoordsIsInBounds(int2 cell, GridConfig config)
+    {
+        if (cell.x < 0 || cell.x >= config.width || cell.y < 0 || cell.y >= config.height) return false;
+        return true;
     }
 
     public static int CoordsToIndex(int x, int y, GridConfig config) => y * config.width + x;
 
     public static int2 IndexToCoords(int index, GridConfig config) => new(index % config.width, index / config.width);
+
+    
+    public static FixedList128Bytes<int2> GetSurroundingCells(int2 cellCoords) //FixedList128Bytes instead of a regular array for burst compilation
+    {
+        FixedList128Bytes<int2> surroundingCoords = new();
+
+        for (int i = 0; i < 9; i++)
+        {
+            int dx = (i % 3) - 1;
+            int dy = (i / 3) - 1;
+            if (dx == 0 && dy == 0) continue; //skip the central cell
+            surroundingCoords.Add(new int2(cellCoords.x + dx, cellCoords.y + dy)); //starting with -1,-1
+        }
+
+        return surroundingCoords; //this is just a coords list
+    }
 }
 
 

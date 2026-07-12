@@ -355,5 +355,5 @@ MonoBehaviour:
   playerSpeed: 5
   skeletonSpawnMinRadius: 3
   skeletonSpawnMaxRadius: 8
-  skeletonSpawnCount: 3
+  skeletonSpawnCount: 300
   skeletonSpawnInterval: 0.3

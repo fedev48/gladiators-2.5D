@@ -105,3 +105,14 @@ InitTestScene*.unity*
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
 ProfilerCaptures/
+
+# Profiling captures and analysis exports
+/ProfileAnalyzer/
+*.pdata
+markerTable*.csv
+
+# macOS
+.DS_Store
+
+# Local planning notes
+/ROADMAP.md

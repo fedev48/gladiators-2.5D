@@ -10,6 +10,8 @@ public class GridDataAuthoring : MonoBehaviour
     [SerializeField] int height;
     [SerializeField] float cellSize;
 
+    public GridConfig Config => new GridConfig { width = width, height = height, cellSize = cellSize };
+
     public class Baker : Baker<GridDataAuthoring>
     {
         public override void Bake(GridDataAuthoring authoring)

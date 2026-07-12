@@ -37,33 +37,29 @@ public partial class InputReaderSystem : SystemBase
 
         if (inputSystem.Player.Interact.WasPressedThisFrame())
         {
-            float3 randomTarget = new float3(
-                UnityEngine.Random.Range(0, 100),
-                0f,
-                UnityEngine.Random.Range(0, 100));
+            // float3 randomTarget = new float3(
+            //     UnityEngine.Random.Range(0, 100),
+            //     0f,
+            //     UnityEngine.Random.Range(0, 100));
 
-            Entity testEntity = EntityManager.CreateEntity(
-                typeof(Unity.Transforms.LocalTransform),
-                typeof(NeedsPathfinding),
-                typeof(UsingPathfinding));
+            // Entity testEntity = EntityManager.CreateEntity(
+            //     typeof(Unity.Transforms.LocalTransform),
+            //     typeof(NeedsPathfinding),
+            //     typeof(UsingPathfinding));
 
-            EntityManager.SetComponentData(testEntity, Unity.Transforms.LocalTransform.Identity);
-            EntityManager.SetComponentData(testEntity, new NeedsPathfinding { Destination = randomTarget });
-            EntityManager.SetComponentEnabled<NeedsPathfinding>(testEntity, true);
-            EntityManager.SetComponentEnabled<UsingPathfinding>(testEntity, false);
+            // EntityManager.SetComponentData(testEntity, Unity.Transforms.LocalTransform.Identity);
+            // EntityManager.SetComponentData(testEntity, new NeedsPathfinding { Destination = randomTarget });
+            // EntityManager.SetComponentEnabled<NeedsPathfinding>(testEntity, true);
+            // EntityManager.SetComponentEnabled<UsingPathfinding>(testEntity, false);
 
-            if (GridDebugVisualizer.Instance != null) GridDebugVisualizer.Instance.MarkDirty();
-            Debug.Log($"[FlowfieldTest] entity {testEntity.Index} -> target {randomTarget}");
-            // foreach ((RefRO<SkeletonSpellConfig> spellConfig, Entity entity) in
-            //     SystemAPI.Query<RefRO<SkeletonSpellConfig>>().WithEntityAccess())
-            // {
-            //     EntityManager.SetComponentData(entity, new SkeletonSpawnBurst
-            //     {
-            //         remaining = spellConfig.ValueRO.spawnCount,
-            //         timer     = 0f
-            //     });
-            //     EntityManager.SetComponentEnabled<SkeletonSpawnBurst>(entity, true);
-            // }        
+            // if (GridDebugVisualizer.Instance != null) GridDebugVisualizer.Instance.MarkDirty();
+            // Debug.Log($"[FlowfieldTest] entity {testEntity.Index} -> target {randomTarget}");
+            foreach ((RefRO<SkeletonSpellConfig> spellConfig, Entity entity) in
+                SystemAPI.Query<RefRO<SkeletonSpellConfig>>().WithEntityAccess())
+            {
+                EntityManager.SetComponentData(entity, new SummonSkeletonEvent { count = spellConfig.ValueRO.spawnCount });
+                EntityManager.SetComponentEnabled<SummonSkeletonEvent>(entity, true);
+            }
         }
 
         if (inputSystem.Player.Attack.WasPressedThisFrame())

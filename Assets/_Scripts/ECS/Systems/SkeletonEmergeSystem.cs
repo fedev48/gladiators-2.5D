@@ -58,7 +58,7 @@ public partial struct SkeletonEmergeSystem : ISystem
             }
         }
 
-        // Animación de emerge — solo si el skeleton tiene SpriteAnimationState
+
         foreach (var animState in
             SystemAPI.Query<RefRW<SpriteAnimationState>>()
                 .WithAll<SpawnState, SkeletonTag>())

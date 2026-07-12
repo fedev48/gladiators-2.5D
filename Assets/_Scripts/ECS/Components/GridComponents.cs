@@ -7,6 +7,11 @@ public struct GridBlueprintTag    : IComponentData { }
 
 public struct FlowFieldMap : IComponentData
 {
-    public int    FlowFieldId;
-    public float3 Destination;
+    public int FlowFieldId;
+    public int DestinationCellIndex;
+}
+
+public struct FlowFieldPoolSingleton : IComponentData
+{
+    public NativeList<Entity> Pool;
 }

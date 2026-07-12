@@ -60,7 +60,7 @@ public struct SkeletonSpawnBurst : IComponentData, IEnableableComponent
 
 public struct PlayerTag           : IComponentData {}
 public struct ShouldSnapToFloorTag: IComponentData, IEnableableComponent {}
-public struct SummonSkeletonEvent : IComponentData, IEnableableComponent {}
+public struct SummonSkeletonEvent : IComponentData, IEnableableComponent { public int count; }
 public struct BulletSpellConfig   : IComponentData {}
 public struct FireBulletEvent     : IComponentData, IEnableableComponent { public float3 direction; }
 
