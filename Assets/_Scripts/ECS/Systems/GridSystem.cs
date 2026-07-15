@@ -104,10 +104,8 @@ partial struct GridSystem : ISystem
         return new float3(CoordsToWorldPosition(coords.x, coords.y, gridConfig));
     }
 
-    public static int2 WorldPosToCoords (float3 position, GridConfig gridConfig)
-    {
-        return new int2 ((int)(position.x/gridConfig.cellSize), (int)(position.z/gridConfig.cellSize));
-    }
+    public static int2 WorldPosToCoords (float3 position, GridConfig gridConfig) => new int2 ((int)(position.x/gridConfig.cellSize), (int)(position.z/gridConfig.cellSize));
+    
 
     public static int WorldPosToIndex(float3 position, GridConfig gridConfig)
     {

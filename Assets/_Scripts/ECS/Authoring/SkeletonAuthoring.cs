@@ -8,6 +8,8 @@ public class SkeletonAuthoring : MonoBehaviour
     public float accelerationMin = 2f;
     public float accelerationMax = 8f;
     public float maxSpeed        = 4f;
+    public float separationRadius = 2f;
+
 
     public class Baker : Baker<SkeletonAuthoring>
     {
@@ -39,10 +41,10 @@ public class SkeletonAuthoring : MonoBehaviour
             //pathfinding tags
             AddComponent(entity, new NeedsPathfinding());
             AddComponent(entity, new UsingPathfinding());
+            AddComponent(entity, new UnitRadius{ Value = authoring.separationRadius});
+            AddComponent(entity, new SeparationVector());
             SetComponentEnabled<NeedsPathfinding>(entity, false);
             SetComponentEnabled<UsingPathfinding> (entity, false);
-
-  
 
             //state machine tags
             AddComponent(entity, new SpawnState());

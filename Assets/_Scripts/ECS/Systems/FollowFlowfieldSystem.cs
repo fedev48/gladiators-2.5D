@@ -34,9 +34,7 @@ partial struct FollowFlowfieldJob : IJobEntity
     [ReadOnly] public BufferLookup<CellComponents> cellsLookup;
     public GridConfig config;
 
-    const float MAX_JITTER_RADIANS = 0.26f; 
-
-    void Execute(Entity entity, in UsingPathfinding usingPathfinding, in LocalTransform localTransform, ref MoveDirection moveDirection)
+    void Execute(in UsingPathfinding usingPathfinding, in LocalTransform localTransform, ref MoveDirection moveDirection)
     {
         int2 cellCoords = GridSystem.WorldPosToCoords(localTransform.Position, config);
         if (!GridSystem.CheckIfCoordsIsInBounds(cellCoords, config)) return;
@@ -50,13 +48,7 @@ partial struct FollowFlowfieldJob : IJobEntity
             !AvoidWall(cells, cellCoords, localTransform.Position, ref cellUnitIsOn))
             return; //no walkable neighbour with an escaping vector: keep previous direction
 
-        float hash01 = math.hash(new int2(entity.Index, entity.Version)) / (float)uint.MaxValue;
-        float angle  = (hash01 - 0.5f) * 2f * MAX_JITTER_RADIANS;
-        math.sincos(angle, out float sin, out float cos);
-        float2 v = cellUnitIsOn.movingVector;
-        float2 jittered = new float2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
-
-        moveDirection.Value = new float3(jittered.x, 0, jittered.y);
+        moveDirection.Value = new float3(cellUnitIsOn.movingVector.x, 0, cellUnitIsOn.movingVector.y);
     }
 
     

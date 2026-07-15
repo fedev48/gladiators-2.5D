@@ -8,6 +8,9 @@ public struct MoveDirection    : IComponentData { public float3 Value; }
 public struct MoveSpeed        : IComponentData { public float  Value; }
 public struct NeedsPathfinding : IComponentData, IEnableableComponent { public float3 Destination; }
 public struct UsingPathfinding : IComponentData, IEnableableComponent { public int flowFieldId; }
+public struct UnitRadius       : IComponentData { public float  Value; }
+public struct SeparationVector : IComponentData { public float3 Value; }
+
 
 
 //animation
