@@ -834,7 +834,7 @@ PlayerSettings:
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
     Android: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
-    Standalone: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
+    Standalone: MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED;SYSTEM_DEBUG
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

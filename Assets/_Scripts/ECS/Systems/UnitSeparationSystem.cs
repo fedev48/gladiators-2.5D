@@ -44,21 +44,6 @@ partial struct UnitSeparationSystem : ISystem
         };
         state.Dependency = separationJob.ScheduleParallel(state.Dependency);
     }
-
-    public static FixedList512Bytes<int2> GetSurroundingCells(int2 cellCoords, int amountOfCellsToCheck)
-    {
-        FixedList512Bytes<int2> surroundingCoords = new();
-        int sideSize = amountOfCellsToCheck*2+1;
-
-        for (int i = 0; i < sideSize*sideSize; i++)
-        {
-            int dx = (i % sideSize) - amountOfCellsToCheck;
-            int dy = (i / sideSize) - amountOfCellsToCheck;
-            surroundingCoords.Add(new int2(cellCoords.x + dx, cellCoords.y + dy));
-        }
-
-        return surroundingCoords;
-    }
 }
 
 [BurstCompile]
@@ -87,7 +72,7 @@ partial struct CalculateSeparationJob : IJobEntity
         int2 entityCellCoords = (int2)math.floor(localTransform.Position.xz / cellSize);
         float3 escapeVector = float3.zero;
 
-        foreach (int2 neighbourCell in UnitSeparationSystem.GetSurroundingCells(entityCellCoords, (int)math.ceil(unitRadius.Value/cellSize)))
+        foreach (int2 neighbourCell in GridSystem.GetSurroundingCells(entityCellCoords, (int)math.ceil(unitRadius.Value/cellSize)))
         {
             if (!unitsPerGridHashMap.ContainsKey(neighbourCell)) continue;
 

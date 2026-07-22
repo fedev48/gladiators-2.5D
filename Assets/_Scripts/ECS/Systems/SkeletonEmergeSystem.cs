@@ -5,34 +5,39 @@ using Unity.Physics;
 using Unity.Transforms;
 
 [BurstCompile]
-[UpdateAfter(typeof(MovementAnimationSystem))]
+[UpdateAfter(typeof(MovementAnimRequestSystem))]
 public partial struct SkeletonEmergeSystem : ISystem
 {
+    ComponentLookup<AnimRequest> _animRequestLookup;
+
+    public void OnCreate(ref SystemState state)
+    {
+        _animRequestLookup = state.GetComponentLookup<AnimRequest>(isReadOnly: false);
+    }
+
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        _animRequestLookup.Update(ref state);
+
         float deltaTime = SystemAPI.Time.DeltaTime;
         float time = (float)SystemAPI.Time.ElapsedTime;
 
         foreach ((RefRW<LocalTransform> transform,
                   RefRW<SkeletonSpawnData> spawnData,
-                  RefRO<PhysicsCollider> collider,
                   RefRW<PhysicsVelocity> velocity,
+                  RefRO<VisualEntity> visual,
                   Entity entity) in
                  SystemAPI.Query<RefRW<LocalTransform>,
                                  RefRW<SkeletonSpawnData>,
-                                 RefRO<PhysicsCollider>,
-                                 RefRW<PhysicsVelocity>>()
+                                 RefRW<PhysicsVelocity>,
+                                 RefRO<VisualEntity>>()
                      .WithAll<SpawnState>()
                      .WithEntityAccess())
         {
-            if (spawnData.ValueRO.height == 0f)
-            {
-                float height = collider.ValueRO.Value.Value.CalculateAabb(RigidTransform.identity).Max.y
-                             - collider.ValueRO.Value.Value.CalculateAabb(RigidTransform.identity).Min.y;
-                spawnData.ValueRW.height = height;
-                transform.ValueRW.Position = spawnData.ValueRO.surfacePos - new float3(0f, height, 0f);
-            }
+            Entity visualEntity = visual.ValueRO.Value;
+            if (_animRequestLookup.HasComponent(visualEntity))
+                _animRequestLookup.GetRefRW(visualEntity).ValueRW.role = Animation.Emerge;
 
             velocity.ValueRW.Linear  = float3.zero;
             velocity.ValueRW.Angular = float3.zero;
@@ -56,14 +61,6 @@ public partial struct SkeletonEmergeSystem : ISystem
                 state.EntityManager.SetComponentEnabled<FollowState>(entity, true);
                 state.EntityManager.SetComponentEnabled<ShouldSnapToFloorTag>(entity, true);
             }
-        }
-
-
-        foreach (var animState in
-            SystemAPI.Query<RefRW<SpriteAnimationState>>()
-                .WithAll<SpawnState, SkeletonTag>())
-        {
-            animState.ValueRW.currentAnimation = 8; // emerge
         }
     }
 }

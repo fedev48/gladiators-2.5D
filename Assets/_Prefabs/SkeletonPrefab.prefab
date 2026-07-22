@@ -82,7 +82,7 @@ MonoBehaviour:
   accelerationMin: 0.1
   accelerationMax: 3
   maxSpeed: 4
-  separationRadius: 1
+  separationRadius: 0.5
 --- !u!54 &4939679687196690327
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -214,7 +214,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpriteAnimatorAuthoring
   animations:
-  - name: IdleSouth
+  - animation: 1
+    animationDirection: 1
     frames:
     - {fileID: -314932916, guid: f5b7ff4fc338a4ff88d0148731e907c4, type: 3}
     - {fileID: 58762974, guid: f5b7ff4fc338a4ff88d0148731e907c4, type: 3}
@@ -231,43 +232,8 @@ MonoBehaviour:
     isOverride: 0
     overrideTo: 0
     flip: 0
-  - name: IdleNorth
-    frames:
-    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
-    isOverride: 1
-    overrideTo: 0
-    flip: 0
-  - name: IdleEast
-    frames:
-    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
-    isOverride: 1
-    overrideTo: 0
-    flip: 0
-  - name: IdleWest
+  - animation: 1
+    animationDirection: 2
     frames:
     - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
@@ -285,7 +251,46 @@ MonoBehaviour:
     isOverride: 1
     overrideTo: 0
     flip: 1
-  - name: WalkSouth
+  - animation: 1
+    animationDirection: 0
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 12
+    isOverride: 1
+    overrideTo: 0
+    flip: 0
+  - animation: 1
+    animationDirection: 3
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 12
+    isOverride: 1
+    overrideTo: 0
+    flip: 1
+  - animation: 2
+    animationDirection: 1
     frames:
     - {fileID: -420977694, guid: f5b7ff4fc338a4ff88d0148731e907c4, type: 3}
     - {fileID: 834055117, guid: f5b7ff4fc338a4ff88d0148731e907c4, type: 3}
@@ -299,19 +304,22 @@ MonoBehaviour:
     isOverride: 0
     overrideTo: 0
     flip: 0
-  - name: WalkNorth
+  - animation: 2
+    animationDirection: 2
+    frames: []
+    fps: 12
+    isOverride: 1
+    overrideTo: 4
+    flip: 1
+  - animation: 2
+    animationDirection: 0
     frames: []
     fps: 12
     isOverride: 1
     overrideTo: 4
     flip: 0
-  - name: WalkEast
-    frames: []
-    fps: 12
-    isOverride: 1
-    overrideTo: 4
-    flip: 0
-  - name: WalkWest
+  - animation: 2
+    animationDirection: 3
     frames: []
     fps: 12
     isOverride: 1
@@ -321,3 +329,5 @@ MonoBehaviour:
   currentAnimation: 0
   flipPivotOffset: {x: -0.004, y: 0}
   cameraYAngle: -135
+  debugOverride: 0
+  debugAnimation: 0

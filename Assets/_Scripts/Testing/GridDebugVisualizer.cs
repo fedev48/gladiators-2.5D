@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GridDebugVisualizer : MonoBehaviour
 {
+#if SYSTEM_DEBUG
     public enum GridViewMode { Blueprint, FlowField }
 
     public static GridDebugVisualizer Instance { get; private set; }
@@ -225,4 +226,5 @@ public class GridDebugVisualizer : MonoBehaviour
             }
         }
     }
+#endif
 }

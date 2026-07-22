@@ -8,10 +8,12 @@ using UnityEngine;
 public class SpriteAnimatorAuthoring : MonoBehaviour
 {
     public List<SpriteAnimationClip> animations;
-    public int     initialAnimation = 0;
-    public int     currentAnimation = 0;
+    public Animation initialAnimation = 0;
+    public Animation currentAnimation = 0;
     public Vector2 flipPivotOffset  = Vector2.zero;
-    public float   cameraYAngle     = 0f;
+    public float   cameraYAngle     = -135f;
+    public bool    debugOverride    = false;
+    public int     debugAnimation   = 0;
 
     public class Baker : Baker<SpriteAnimatorAuthoring>
     {
@@ -26,8 +28,15 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                 currentAnimation = authoring.initialAnimation,
                 currentFrame     = 0,
                 elapsed          = 0f,
-                prevAnimation    = -1
             });
+
+            AddComponent(entity, new AnimRequest
+            {
+                role      = Animation.Idle,
+                direction = AnimationDirection.Front,
+            });
+
+
 
             var clipBuffer  = AddBuffer<AnimationClipData>(entity);
             var frameBuffer = AddBuffer<SpriteFrameElement>(entity);
@@ -42,6 +51,8 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                     int frameCount = target.frames?.Count ?? 0;
                     clipBuffer.Add(new AnimationClipData
                     {
+                        role       = clip.animation,
+                        direction  = clip.animationDirection,
                         startIndex = frameOffset,
                         frameCount = frameCount,
                         fps        = Mathf.Max(target.fps, 0.01f),
@@ -62,6 +73,8 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                 {
                     clipBuffer.Add(new AnimationClipData
                     {
+                        role       = clip.animation,
+                        direction  = clip.animationDirection,
                         startIndex = frameOffset,
                         frameCount = clip.isOverride ? 0 : (clip.frames?.Count ?? 0),
                         fps        = Mathf.Max(clip.fps, 0.01f),
@@ -76,11 +89,19 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                 }
             }
 
-            var initSprite = authoring.animations[authoring.initialAnimation].frames[0];
-            AddComponent(entity, new SpriteUVRect { value = SpriteToUV(initSprite) });
-            AddComponent(entity, new OneShotAnimTag());
-            SetComponentEnabled<OneShotAnimTag>(entity, false);
+            AddComponent(entity, new SpriteUVRect { value = frameBuffer.Length > 0 ? frameBuffer[0].uv : default });
+            AddComponent(entity, new IsOneShot
+            {
+                animation = Animation.None,
+                animationDirection = 0
+            });
+            SetComponentEnabled<IsOneShot>(entity, false);
             AddComponent(entity, new CameraFacingData { invRotation = math.inverse(quaternion.RotateY(math.radians(authoring.cameraYAngle))) });
+
+#if SYSTEM_DEBUG
+            AddComponent(entity, new DebugAnimationOverride { animIndex = authoring.debugAnimation });
+            SetComponentEnabled<DebugAnimationOverride>(entity, authoring.debugOverride);
+#endif
         }
 
         static float4 SpriteToUV(Sprite sprite)
@@ -91,11 +112,12 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
         }
     }
 }
-
+#region Authoring
 [Serializable]
 public class SpriteAnimationClip
 {
-    public string       name;
+    public Animation animation = Animation.None;
+    public AnimationDirection animationDirection = AnimationDirection.Front;
     public List<Sprite> frames;
     public float        fps        = 8f;
     public bool         isOverride = false;
@@ -103,17 +125,61 @@ public class SpriteAnimationClip
     public bool         flip       = false;
 }
 
+public enum Animation
+{
+    None,
+    Idle,
+    Walk,
+    Attack,
+    Cast,
+    Emerge
+}
+public enum AnimationDirection : byte
+{
+    Front,
+    SideRight,
+    SideLeft,
+    Back
+}
+#endregion
+
+#region State
+
+public struct AnimRequest : IComponentData
+{
+    public Animation          role;
+    public AnimationDirection direction;
+}
+
 public struct SpriteAnimationState : IComponentData
 {
-    public int   currentAnimation;
-    public int   currentFrame;
-    public float elapsed;
-    public int   prevAnimation;
+    public Animation          currentAnimation;    
+    public AnimationDirection animationDirection;
+    public int                currentFrame;
+    public float              elapsed;
 }
+
+public struct IsOneShot : IComponentData, IEnableableComponent
+{
+    public Animation          animation;
+    public AnimationDirection animationDirection;
+}
+
+#if SYSTEM_DEBUG
+public struct DebugAnimationOverride : IComponentData, IEnableableComponent
+{
+    public int animIndex;
+}
+#endif
+#endregion
+
+#region Runtime
 
 [InternalBufferCapacity(4)]
 public struct AnimationClipData : IBufferElementData
 {
+    public Animation          role;
+    public AnimationDirection direction;
     public int   startIndex;
     public int   frameCount;
     public float fps;
@@ -136,3 +202,4 @@ public struct CameraFacingData : IComponentData
 {
     public quaternion invRotation;
 }
+#endregion

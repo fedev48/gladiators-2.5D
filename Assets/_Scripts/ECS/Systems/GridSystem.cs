@@ -14,12 +14,17 @@ partial struct GridSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         wallLayerMask = (uint)(1 << UnityEngine.LayerMask.NameToLayer("Walls"));
+        state.EntityManager.AddComponent<CellComponentsForCorpseCount>(state.SystemHandle);//creates a buffer bcause CellComponentsForCorpseCount is IBufferElementData
         state.RequireForUpdate<GridConfig>();
+
     }
 
     public void OnUpdate(ref SystemState state)
     {
         EntityCommandBuffer entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
+        DynamicBuffer<CellComponentsForCorpseCount> bufferCorpses = state.EntityManager.GetBuffer<CellComponentsForCorpseCount>(state.SystemHandle);
+        PhysicsWorldSingleton physicsWorldSingleton = SystemAPI.GetSingleton<PhysicsWorldSingleton>();
+        CollisionWorld collisionWorld = physicsWorldSingleton.CollisionWorld;
         foreach ((RefRO<GridConfig> config, Entity entity) in
             SystemAPI.Query<RefRO<GridConfig>>()
                 .WithAll<IsBlueprintPendingTag>()
@@ -33,9 +38,8 @@ partial struct GridSystem : ISystem
             entityCommandBuffer.SetName(gridEntity, "GridBlueprint");
 
             var buffer = entityCommandBuffer.AddBuffer<CellComponents>(gridEntity);
-            
-            PhysicsWorldSingleton physicsWorldSingleton = SystemAPI.GetSingleton<PhysicsWorldSingleton>();
-            CollisionWorld collisionWorld = physicsWorldSingleton.CollisionWorld;
+        
+
              
             for (int y = 0; y < config.ValueRO.height; y++)
             {
@@ -53,6 +57,8 @@ partial struct GridSystem : ISystem
                         cost = cost,
                         bestCost = -1,
                     });
+
+                    bufferCorpses.Add(new CellComponentsForCorpseCount {currentBuriedBodies = 3});
 
                 }
             }
@@ -123,17 +129,28 @@ partial struct GridSystem : ISystem
 
     public static int2 IndexToCoords(int index, GridConfig config) => new(index % config.width, index / config.width);
 
-    
-    public static FixedList128Bytes<int2> GetSurroundingCells(int2 cellCoords) //FixedList128Bytes instead of a regular array for burst compilation
-    {
-        FixedList128Bytes<int2> surroundingCoords = new();
 
-        for (int i = 0; i < 9; i++)
+    public static FixedList4096Bytes<int2> GetSurroundingCells(int2 cellCoords, int amountOfCellsToCheck, bool roundedCorners = false, bool skipCentralCell = false) //FixedList4096Bytes fits up to amountOfCellsToCheck = 10
+    {
+        FixedList4096Bytes<int2> surroundingCoords = new();
+        int sideSize = amountOfCellsToCheck*2+1;
+
+        for (int i = 0; i < sideSize*sideSize; i++)
         {
-            int dx = (i % 3) - 1;
-            int dy = (i / 3) - 1;
-            if (dx == 0 && dy == 0) continue; //skip the central cell
-            surroundingCoords.Add(new int2(cellCoords.x + dx, cellCoords.y + dy)); //starting with -1,-1
+            int dx = (i % sideSize) - amountOfCellsToCheck;
+            int dy = (i / sideSize) - amountOfCellsToCheck;
+
+            if (skipCentralCell && dx == 0 && dy == 0) continue;
+
+            if (roundedCorners && amountOfCellsToCheck > 1) //for a circular (kind ) area
+            {
+                int adx = math.abs(dx);
+                int ady = math.abs(dy);
+                if (ady == amountOfCellsToCheck && adx > amountOfCellsToCheck - 2) continue; //drop 2 cells per side
+                if (ady == amountOfCellsToCheck - 1 && adx > amountOfCellsToCheck - 1) continue; //drop 1 cell per side
+            }
+
+            surroundingCoords.Add(new int2(cellCoords.x + dx, cellCoords.y + dy));
         }
 
         return surroundingCoords; //this is just a coords list

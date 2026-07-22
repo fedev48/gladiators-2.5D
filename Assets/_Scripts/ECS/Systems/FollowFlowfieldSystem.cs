@@ -54,7 +54,7 @@ partial struct FollowFlowfieldJob : IJobEntity
     
     bool AvoidWall(DynamicBuffer<CellComponents> cells, int2 cellCoords, float3 position, ref CellComponents cellUnitIsOn)
     {
-        FixedList128Bytes<int2> surroundingCellsCoords = GridSystem.GetSurroundingCells(cellCoords);
+        FixedList4096Bytes<int2> surroundingCellsCoords = GridSystem.GetSurroundingCells(cellCoords, 1, skipCentralCell: true);
         float bestDistSq = float.MaxValue;
         bool  found      = false;
 

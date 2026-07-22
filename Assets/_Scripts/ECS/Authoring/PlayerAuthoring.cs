@@ -37,8 +37,6 @@ public class PlayerAuthoring : MonoBehaviour
                 spawnCount   = authoring.skeletonSpawnCount,
                 interval     = authoring.skeletonSpawnInterval
             });
-            AddComponent(entity, new SkeletonSpawnBurst());
-            SetComponentEnabled<SkeletonSpawnBurst>(entity, false);
             SetComponentEnabled<SummonSkeletonEvent>(entity, false);
         }
     }
@@ -50,12 +48,6 @@ public struct SkeletonSpellConfig : IComponentData
     public float maxRadius;
     public int   spawnCount;
     public float interval;
-}
-
-public struct SkeletonSpawnBurst : IComponentData, IEnableableComponent
-{
-    public int   remaining;
-    public float timer;
 }
 
 public struct PlayerTag           : IComponentData {}

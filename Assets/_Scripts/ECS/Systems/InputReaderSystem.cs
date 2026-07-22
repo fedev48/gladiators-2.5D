@@ -54,11 +54,16 @@ public partial class InputReaderSystem : SystemBase
 
             // if (GridDebugVisualizer.Instance != null) GridDebugVisualizer.Instance.MarkDirty();
             // Debug.Log($"[FlowfieldTest] entity {testEntity.Index} -> target {randomTarget}");
-            foreach ((RefRO<SkeletonSpellConfig> spellConfig, Entity entity) in
-                SystemAPI.Query<RefRO<SkeletonSpellConfig>>().WithEntityAccess())
+            foreach ((RefRO<SkeletonSpellConfig> spellConfig, RefRO<VisualEntity> visual, Entity entity) in
+                SystemAPI.Query<RefRO<SkeletonSpellConfig>, RefRO<VisualEntity>>().WithEntityAccess())
             {
                 EntityManager.SetComponentData(entity, new SummonSkeletonEvent { count = spellConfig.ValueRO.spawnCount });
                 EntityManager.SetComponentEnabled<SummonSkeletonEvent>(entity, true);
+
+                Entity visualEntity = visual.ValueRO.Value;
+                AnimationDirection facing = EntityManager.GetComponentData<AnimRequest>(visualEntity).direction;
+                EntityManager.SetComponentData(visualEntity, new IsOneShot { animation = Animation.Cast, animationDirection = facing });
+                EntityManager.SetComponentEnabled<IsOneShot>(visualEntity, true);
             }
         }
 

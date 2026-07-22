@@ -17,7 +17,7 @@ public struct SeparationVector : IComponentData { public float3 Value; }
 public struct VisualEntity        : IComponentData { public Entity Value; }
 public struct FacingDirection     : IComponentData { public float3 Value; }
 public struct UnitMovementAnimTag : IComponentData {}
-public struct OneShotAnimTag      : IComponentData, IEnableableComponent {}
+
 
 
 //state machine

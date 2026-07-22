@@ -182,7 +182,7 @@ partial struct FlowfieldsSystem : ISystem
         for (int i = 0; i < cellComponents.Length; i++)
         {
             int2 centralCoords = GridSystem.IndexToCoords(i, gridConfigSingleton);
-            FixedList128Bytes<int2> surroundingCellsCoords = GridSystem.GetSurroundingCells(centralCoords);
+            FixedList4096Bytes<int2> surroundingCellsCoords = GridSystem.GetSurroundingCells(centralCoords, 1, skipCentralCell: true);
             int lowestCost = 10000;
             int lowestCostCell = -1;
 
@@ -222,7 +222,7 @@ partial struct FlowfieldsSystem : ISystem
     private void ProcessCurrentGridNeighbours(DynamicBuffer<CellComponents> currentFlowfieldList, int centralFlatIndex, int2 centralCellCoords, NativeQueue<int> nativeQueueCoords, GridConfig config)
     {
         
-        FixedList128Bytes<int2> surroundingCellsCoords = GridSystem.GetSurroundingCells(centralCellCoords);
+        FixedList4096Bytes<int2> surroundingCellsCoords = GridSystem.GetSurroundingCells(centralCellCoords, 1, skipCentralCell: true);
 
         for (int i = 0; i < surroundingCellsCoords.Length; i++)
         {
@@ -233,7 +233,7 @@ partial struct FlowfieldsSystem : ISystem
             ref CellComponents currentNeighbourEntity = ref currentFlowfieldList.ElementAt(flatIndexCurrentNeighbour);
             if (currentNeighbourEntity.cost == GridSystem.WALL_COST) continue;
 
-            bool isDiagonal = i < 4 ? (i % 2 == 0) : (i % 2 != 0);
+            bool isDiagonal = currentNeighbourCoords.x != centralCellCoords.x && currentNeighbourCoords.y != centralCellCoords.y;
 
             if (DiagonalCrossesWallCorner(currentFlowfieldList, centralCellCoords, currentNeighbourCoords, config)) continue;
 

@@ -104,7 +104,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpriteAnimatorAuthoring
   animations:
-  - name: IdleSouth
+  - animation: 1
+    animationDirection: 1
     frames:
     - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
@@ -122,7 +123,8 @@ MonoBehaviour:
     isOverride: 0
     overrideTo: 0
     flip: 0
-  - name: IdleNorth
+  - animation: 1
+    animationDirection: 2
     frames:
     - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
@@ -136,47 +138,50 @@ MonoBehaviour:
     - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
-    isOverride: 1
-    overrideTo: 0
-    flip: 0
-  - name: IdleEast
-    frames:
-    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
-    isOverride: 1
-    overrideTo: 0
-    flip: 0
-  - name: IdleWest
-    frames:
-    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
+    fps: 0
     isOverride: 1
     overrideTo: 0
     flip: 1
-  - name: WalkSouth
+  - animation: 1
+    animationDirection: 0
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 0
+    flip: 0
+  - animation: 1
+    animationDirection: 3
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 0
+    flip: 1
+  - animation: 2
+    animationDirection: 1
     frames:
     - {fileID: -307941159, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: 495804482, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
@@ -190,71 +195,153 @@ MonoBehaviour:
     - {fileID: 1848438083, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: 856486429, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: 35051676, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 85293466, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 12
     isOverride: 0
     overrideTo: 0
     flip: 0
-  - name: WalkNorth
+  - animation: 2
+    animationDirection: 2
     frames:
-    - {fileID: -307941159, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 495804482, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -682198016, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1584354820, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1352046310, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1581345870, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -2032607393, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1519443411, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -696919651, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1848438083, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 856486429, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 35051676, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 85293466, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
-    isOverride: 1
-    overrideTo: 4
-    flip: 0
-  - name: WalkEast
-    frames:
-    - {fileID: -307941159, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 495804482, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -682198016, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1584354820, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1352046310, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1581345870, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -2032607393, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1519443411, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -696919651, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1848438083, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 856486429, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 35051676, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
-    isOverride: 1
-    overrideTo: 4
-    flip: 0
-  - name: WalkWest
-    frames:
-    - {fileID: -307941159, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 495804482, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -682198016, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1584354820, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -1352046310, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1581345870, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -2032607393, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1519443411, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: -696919651, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 1848438083, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 856486429, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 35051676, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    - {fileID: 85293466, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
     isOverride: 1
     overrideTo: 4
     flip: 1
-  initialAnimation: 0
+  - animation: 2
+    animationDirection: 3
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 4
+    flip: 1
+  - animation: 2
+    animationDirection: 0
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 4
+    flip: 0
+  - animation: 4
+    animationDirection: 1
+    frames:
+    - {fileID: -1805650104, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1498919413, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 2147156582, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -813303771, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -351428765, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1441931071, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 857633851, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -751328808, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -167357147, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1074992382, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1950298843, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -444408069, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1986221463, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1032179612, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1033570239, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -239054279, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 12
+    isOverride: 0
+    overrideTo: 4
+    flip: 0
+  - animation: 4
+    animationDirection: 2
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 8
+    flip: 1
+  - animation: 4
+    animationDirection: 0
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 8
+    flip: 0
+  - animation: 4
+    animationDirection: 3
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    isOverride: 1
+    overrideTo: 8
+    flip: 1
+  initialAnimation: 1
   currentAnimation: 0
   flipPivotOffset: {x: -0.004, y: 0}
   cameraYAngle: -135
+  debugOverride: 0
+  debugAnimation: 0
 --- !u!1 &905694199307859327
 GameObject:
   m_ObjectHideFlags: 0
