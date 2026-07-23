@@ -30,9 +30,9 @@ public partial class InputReaderSystem : SystemBase
       
         
 
-        foreach (var moveDirection in SystemAPI.Query<RefRW<MoveDirection>>().WithAll<PlayerTag>())
+        foreach ((RefRW<DesiredVelocity> desired, RefRO<MoveSpeed> speed) in SystemAPI.Query<RefRW<DesiredVelocity>, RefRO<MoveSpeed>>().WithAll<PlayerTag>())
         {
-            moveDirection.ValueRW.Value = new float3(cameraFixedDirection.x, 0, cameraFixedDirection.z);
+            desired.ValueRW.Value = new float3(cameraFixedDirection.x, 0, cameraFixedDirection.z) * speed.ValueRO.Value;
         }
 
         if (inputSystem.Player.Interact.WasPressedThisFrame())
@@ -64,6 +64,11 @@ public partial class InputReaderSystem : SystemBase
                 AnimationDirection facing = EntityManager.GetComponentData<AnimRequest>(visualEntity).direction;
                 EntityManager.SetComponentData(visualEntity, new IsOneShot { animation = Animation.Cast, animationDirection = facing });
                 EntityManager.SetComponentEnabled<IsOneShot>(visualEntity, true);
+
+                float castDuration = GetClipDuration(visualEntity, Animation.Cast, facing);
+                float remainingTime = EntityManager.GetComponentData<MovementBlocked>(entity).remainingTime;
+                EntityManager.SetComponentData(entity, new MovementBlocked { remainingTime = math.max(remainingTime, castDuration) });
+                EntityManager.SetComponentEnabled<MovementBlocked>(entity, true);
             }
         }
 
@@ -79,6 +84,21 @@ public partial class InputReaderSystem : SystemBase
 
         
 
+    }
+
+    float GetClipDuration(Entity visualEntity, Animation animation, AnimationDirection direction)
+    {
+        DynamicBuffer<AnimationClipData> clips = EntityManager.GetBuffer<AnimationClipData>(visualEntity);
+
+        foreach (AnimationClipData clip in clips)
+        {
+            if (clip.role != animation || clip.direction != direction) continue;
+
+            AnimationClipData resolved = clip.overrideTo >= 0 ? clips[clip.overrideTo] : clip;
+            return resolved.frameCount / resolved.fps;
+        }
+
+        return 0f;
     }
 
     protected override void OnStopRunning() => inputSystem.Disable();

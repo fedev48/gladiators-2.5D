@@ -14,8 +14,8 @@ partial struct UnitSeparationSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         separationQuery = SystemAPI.QueryBuilder()
-        .WithAllRW<SeparationVector>()
-        .WithAll<UnitRadius, LocalTransform>()
+        .WithAllRW<SeparationVelocity>()
+        .WithAll<SeparationConfig, LocalTransform>()
         .Build();
 
         state.RequireForUpdate(separationQuery);
@@ -47,7 +47,7 @@ partial struct UnitSeparationSystem : ISystem
 }
 
 [BurstCompile]
-[WithAll(typeof(SeparationVector), typeof(UnitRadius))]
+[WithAll(typeof(SeparationVelocity), typeof(SeparationConfig))]
 partial struct PopulateUnitsHashMapJob : IJobEntity
 {
     public NativeParallelMultiHashMap<int2, LocalTransform>.ParallelWriter hashMapWriter;
@@ -66,13 +66,13 @@ partial struct CalculateSeparationJob : IJobEntity
     [ReadOnly] public NativeParallelMultiHashMap<int2, LocalTransform> unitsPerGridHashMap;
     public float cellSize;
 
-    void Execute(ref SeparationVector separationVector, in UnitRadius unitRadius, in LocalTransform localTransform)
+    void Execute(ref SeparationVelocity separationVector, in SeparationConfig separationConfig, in LocalTransform localTransform)
     {
         NativeList<LocalTransform> surroundingUnits = new NativeList<LocalTransform>(Allocator.Temp);
         int2 entityCellCoords = (int2)math.floor(localTransform.Position.xz / cellSize);
         float3 escapeVector = float3.zero;
 
-        foreach (int2 neighbourCell in GridSystem.GetSurroundingCells(entityCellCoords, (int)math.ceil(unitRadius.Value/cellSize)))
+        foreach (int2 neighbourCell in GridSystem.GetSurroundingCells(entityCellCoords, (int)math.ceil(separationConfig.radius/cellSize)))
         {
             if (!unitsPerGridHashMap.ContainsKey(neighbourCell)) continue;
 
@@ -87,17 +87,18 @@ partial struct CalculateSeparationJob : IJobEntity
         {
             float2 distanceVector = unitPos.Position.xz - localTransform.Position.xz;
             float distanceSq = math.lengthsq(distanceVector);
-            if (distanceSq > 0.0001f && distanceSq < unitRadius.Value*unitRadius.Value)
+            if (distanceSq > 0.0001f && distanceSq < separationConfig.radius*separationConfig.radius)
             {
                 entitiesCount++;
-                float distance = math.sqrt(distanceSq);
-                float2 push = (distanceVector / distance) / distance;
+                float distance    = math.sqrt(distanceSq);
+                float penetration = (separationConfig.radius - distance) / separationConfig.radius;
+                float2 push       = (distanceVector / distance) * penetration;
                 escapeVector += new float3(push.x, 0, push.y);
             }
         }
 
         if (entitiesCount > 0) escapeVector = -escapeVector/entitiesCount;
 
-        separationVector.Value = escapeVector;
+        separationVector.Value = escapeVector * separationConfig.speed;
     }
 }

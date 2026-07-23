@@ -82,7 +82,8 @@ MonoBehaviour:
   accelerationMin: 0.1
   accelerationMax: 3
   maxSpeed: 4
-  separationRadius: 0.5
+  separationRadius: 1
+  separationSpeed: 15
 --- !u!54 &4939679687196690327
 Rigidbody:
   m_ObjectHideFlags: 0

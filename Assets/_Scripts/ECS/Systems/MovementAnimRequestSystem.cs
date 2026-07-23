@@ -20,8 +20,8 @@ public partial struct MovementAnimRequestSystem : ISystem
         _requestLookup.Update(ref state);
         _cameraLookup.Update(ref state);
 
-        foreach ((RefRO<MoveDirection> moveDirection, RefRO<VisualEntity> visual) in
-            SystemAPI.Query<RefRO<MoveDirection>, RefRO<VisualEntity>>()
+        foreach ((RefRO<DesiredVelocity> desiredVelocity, RefRO<VisualEntity> visual) in
+            SystemAPI.Query<RefRO<DesiredVelocity>, RefRO<VisualEntity>>()
                 .WithAll<UnitMovementAnimTag>())
         {
             Entity visualEntity = visual.ValueRO.Value;
@@ -29,7 +29,7 @@ public partial struct MovementAnimRequestSystem : ISystem
 
             RefRW<AnimRequest> request = _requestLookup.GetRefRW(visualEntity);
 
-            float3 worldDir = moveDirection.ValueRO.Value;
+            float3 worldDir = desiredVelocity.ValueRO.Value;
             if (math.lengthsq(worldDir) <= 0.01f)
             {
 

@@ -34,7 +34,7 @@ partial struct FollowFlowfieldJob : IJobEntity
     [ReadOnly] public BufferLookup<CellComponents> cellsLookup;
     public GridConfig config;
 
-    void Execute(in UsingPathfinding usingPathfinding, in LocalTransform localTransform, ref MoveDirection moveDirection)
+    void Execute(in UsingPathfinding usingPathfinding, in LocalTransform localTransform, in MoveSpeed moveSpeed, ref DesiredVelocity desiredVelocity)
     {
         int2 cellCoords = GridSystem.WorldPosToCoords(localTransform.Position, config);
         if (!GridSystem.CheckIfCoordsIsInBounds(cellCoords, config)) return;
@@ -48,7 +48,7 @@ partial struct FollowFlowfieldJob : IJobEntity
             !AvoidWall(cells, cellCoords, localTransform.Position, ref cellUnitIsOn))
             return; //no walkable neighbour with an escaping vector: keep previous direction
 
-        moveDirection.Value = new float3(cellUnitIsOn.movingVector.x, 0, cellUnitIsOn.movingVector.y);
+        desiredVelocity.Value = new float3(cellUnitIsOn.movingVector.x, 0, cellUnitIsOn.movingVector.y) * moveSpeed.Value;
     }
 
     

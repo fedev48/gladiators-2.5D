@@ -9,6 +9,7 @@ public class SkeletonAuthoring : MonoBehaviour
     public float accelerationMax = 8f;
     public float maxSpeed        = 4f;
     public float separationRadius = 2f;
+    public float separationSpeed  = 8f;
 
 
     public class Baker : Baker<SkeletonAuthoring>
@@ -19,9 +20,13 @@ public class SkeletonAuthoring : MonoBehaviour
 
             AddComponent(entity, new SkeletonTag());
             AddComponent(entity, new UnitTag());
-            AddComponent(entity, new MoveDirection {});
+            AddComponent(entity, new MovementBlocked());
+            SetComponentEnabled<MovementBlocked>(entity, false);
+            AddComponent(entity, new CurrentVelocity {});
+            AddComponent(entity, new DesiredVelocity {});
+            AddComponent(entity, new KnockbackVelocity {});
             AddComponent(entity, new MoveSpeed {});
-            
+
             AddComponent(entity, new ShouldSnapToFloorTag());
             SetComponentEnabled<ShouldSnapToFloorTag>(entity, false);
             
@@ -41,8 +46,12 @@ public class SkeletonAuthoring : MonoBehaviour
             //pathfinding tags
             AddComponent(entity, new NeedsPathfinding());
             AddComponent(entity, new UsingPathfinding());
-            AddComponent(entity, new UnitRadius{ Value = authoring.separationRadius});
-            AddComponent(entity, new SeparationVector());
+            AddComponent(entity, new SeparationConfig
+            {
+                radius = authoring.separationRadius,
+                speed  = authoring.separationSpeed
+            });
+            AddComponent(entity, new SeparationVelocity());
             SetComponentEnabled<NeedsPathfinding>(entity, false);
             SetComponentEnabled<UsingPathfinding> (entity, false);
 

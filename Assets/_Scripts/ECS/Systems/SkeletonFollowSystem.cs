@@ -48,17 +48,18 @@ public partial struct SkeletonFollowSystem : ISystem
         foreach ((RefRW<LocalTransform> transform,
                   RefRW<SkeletonSpawnData> spawnData,
                   RefRO<SkeletonConfig> config,
-                  RefRW<MoveDirection> moveDir,
+                  RefRW<DesiredVelocity> moveDir,
                   RefRW<MoveSpeed> moveSpeed,
                   RefRW<NeedsPathfinding> needsPathfinding,
                   Entity entity) in
             SystemAPI.Query<RefRW<LocalTransform>,
                             RefRW<SkeletonSpawnData>,
                             RefRO<SkeletonConfig>,
-                            RefRW<MoveDirection>,
+                            RefRW<DesiredVelocity>,
                             RefRW<MoveSpeed>,
                             RefRW<NeedsPathfinding>>()
                 .WithAll<FollowState>()
+                .WithNone<MovementBlocked>()
                 .WithPresent<NeedsPathfinding>()
                 .WithEntityAccess())
         {
@@ -105,7 +106,7 @@ public partial struct SkeletonFollowSystem : ISystem
             if (!isFollowingFlowField)
             {
                 float3 direction = math.normalizesafe(toTarget);
-                moveDir.ValueRW.Value = currentSpeed > 0.01f ? direction : float3.zero;
+                moveDir.ValueRW.Value = currentSpeed > 0.01f ? direction * currentSpeed : float3.zero;
             }
 
             transform.ValueRW.Rotation = quaternion.identity;

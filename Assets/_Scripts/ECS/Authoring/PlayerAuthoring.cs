@@ -19,8 +19,6 @@ public class PlayerAuthoring : MonoBehaviour
 
             AddComponent(entity, new PlayerTag());
             AddComponent(entity, new UnitTag());
-            AddComponent(entity, new MoveSpeed     { Value = authoring.playerSpeed });
-            AddComponent(entity, new MoveDirection {});
             AddComponent(entity, new UnitMovementAnimTag());
             Entity visualEntity = GetEntity(authoring.GetComponentInChildren<SpriteAnimatorAuthoring>(), TransformUsageFlags.Dynamic);
             AddComponent(entity, new VisualEntity { Value = visualEntity });
@@ -38,6 +36,17 @@ public class PlayerAuthoring : MonoBehaviour
                 interval     = authoring.skeletonSpawnInterval
             });
             SetComponentEnabled<SummonSkeletonEvent>(entity, false);
+            //Movement components
+
+            AddComponent(entity, new MoveSpeed     { Value = authoring.playerSpeed });
+            AddComponent(entity, new CurrentVelocity {});
+
+            AddComponent(entity, new DesiredVelocity {});
+            AddComponent(entity, new KnockbackVelocity {});
+            AddComponent(entity, new SeparationVelocity {});
+            AddComponent(entity, new MovementBlocked());
+            SetComponentEnabled<MovementBlocked>(entity, false);
+
         }
     }
 }
@@ -51,9 +60,8 @@ public struct SkeletonSpellConfig : IComponentData
 }
 
 public struct PlayerTag           : IComponentData {}
-public struct ShouldSnapToFloorTag: IComponentData, IEnableableComponent {}
-public struct SummonSkeletonEvent : IComponentData, IEnableableComponent { public int count; }
 public struct BulletSpellConfig   : IComponentData {}
+public struct SummonSkeletonEvent : IComponentData, IEnableableComponent { public int count; }
 public struct FireBulletEvent     : IComponentData, IEnableableComponent { public float3 direction; }
 
 [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
