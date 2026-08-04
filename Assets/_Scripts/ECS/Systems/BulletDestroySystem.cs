@@ -4,7 +4,7 @@ using Unity.Physics;
 using Unity.Physics.Systems;
 
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-[UpdateAfter(typeof(PhysicsSimulationGroup))]
+// [UpdateAfter(typeof(PhysicsSimulationGroup))]
 [BurstCompile]
 public partial struct BulletDestroySystem : ISystem
 {

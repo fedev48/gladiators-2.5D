@@ -12,8 +12,9 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
     public Animation currentAnimation = 0;
     public Vector2 flipPivotOffset  = Vector2.zero;
     public float   cameraYAngle     = -135f;
-    public bool    debugOverride    = false;
-    public int     debugAnimation   = 0;
+    public bool               debugOverride    = false;
+    public Animation          debugAnimation   = Animation.Idle;
+    public AnimationDirection debugDirection   = AnimationDirection.Front;
 
     public class Baker : Baker<SpriteAnimatorAuthoring>
     {
@@ -56,6 +57,7 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                         startIndex = frameOffset,
                         frameCount = frameCount,
                         fps        = Mathf.Max(target.fps, 0.01f),
+                        hitFrame   = target.hitFrame,
                         overrideTo = -1
                     });
                     if (target.frames != null)
@@ -78,6 +80,7 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                         startIndex = frameOffset,
                         frameCount = clip.isOverride ? 0 : (clip.frames?.Count ?? 0),
                         fps        = Mathf.Max(clip.fps, 0.01f),
+                        hitFrame   = clip.hitFrame,
                         overrideTo = clip.isOverride ? clip.overrideTo : -1
                     });
                     if (!clip.isOverride && clip.frames != null)
@@ -90,6 +93,9 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
             }
 
             AddComponent(entity, new SpriteUVRect { value = frameBuffer.Length > 0 ? frameBuffer[0].uv : default });
+            AddComponent(entity, new SpriteMaskColor { value = new float4(0f, 0f, 0f, 1f) });
+            AddComponent(entity, new DamageAnimation());
+            SetComponentEnabled<DamageAnimation>(entity, false);
             AddComponent(entity, new IsOneShot
             {
                 animation = Animation.None,
@@ -99,7 +105,11 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
             AddComponent(entity, new CameraFacingData { invRotation = math.inverse(quaternion.RotateY(math.radians(authoring.cameraYAngle))) });
 
 #if SYSTEM_DEBUG
-            AddComponent(entity, new DebugAnimationOverride { animIndex = authoring.debugAnimation });
+            AddComponent(entity, new DebugAnimationOverride
+            {
+                animation = authoring.debugAnimation,
+                direction = authoring.debugDirection
+            });
             SetComponentEnabled<DebugAnimationOverride>(entity, authoring.debugOverride);
 #endif
         }
@@ -120,6 +130,7 @@ public class SpriteAnimationClip
     public AnimationDirection animationDirection = AnimationDirection.Front;
     public List<Sprite> frames;
     public float        fps        = 8f;
+    public int          hitFrame   = -1;
     public bool         isOverride = false;
     public int          overrideTo = 0;
     public bool         flip       = false;
@@ -168,7 +179,8 @@ public struct IsOneShot : IComponentData, IEnableableComponent
 #if SYSTEM_DEBUG
 public struct DebugAnimationOverride : IComponentData, IEnableableComponent
 {
-    public int animIndex;
+    public Animation          animation;
+    public AnimationDirection direction;
 }
 #endif
 #endregion
@@ -183,6 +195,7 @@ public struct AnimationClipData : IBufferElementData
     public int   startIndex;
     public int   frameCount;
     public float fps;
+    public int   hitFrame;
     public int   overrideTo;
 }
 
@@ -194,6 +207,12 @@ public struct SpriteFrameElement : IBufferElementData
 
 [MaterialProperty("_SpriteUV")]
 public struct SpriteUVRect : IComponentData
+{
+    public float4 value;
+}
+
+[MaterialProperty("_MaskColor")]
+public struct SpriteMaskColor : IComponentData
 {
     public float4 value;
 }

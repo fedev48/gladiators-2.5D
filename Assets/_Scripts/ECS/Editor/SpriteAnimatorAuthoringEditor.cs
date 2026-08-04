@@ -91,6 +91,12 @@ public class SpriteAnimatorAuthoringEditor : Editor
         {
             EditorGUILayout.PropertyField(clip.FindPropertyRelative("frames"), true);
             EditorGUILayout.PropertyField(clip.FindPropertyRelative("fps"));
+
+            var hitFrameProp = clip.FindPropertyRelative("hitFrame");
+            int frameCount   = clip.FindPropertyRelative("frames").arraySize;
+            hitFrameProp.intValue = Mathf.Clamp(
+                EditorGUILayout.IntField(new GUIContent("Hit Frame", "-1 = el clip no golpea"), hitFrameProp.intValue),
+                -1, Mathf.Max(frameCount - 1, -1));
         }
 
         EditorGUI.indentLevel--;

@@ -83,7 +83,10 @@ MonoBehaviour:
   accelerationMax: 3
   maxSpeed: 4
   separationRadius: 1
-  separationSpeed: 15
+  separationStrenght: 12
+  knockbackMultiplier: 1
+  knockbackDurationMultiplier: 1
+  health: 10
 --- !u!54 &4939679687196690327
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -332,3 +335,4 @@ MonoBehaviour:
   cameraYAngle: -135
   debugOverride: 0
   debugAnimation: 0
+  debugDirection: 0

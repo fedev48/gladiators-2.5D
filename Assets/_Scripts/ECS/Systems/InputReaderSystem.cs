@@ -32,7 +32,7 @@ public partial class InputReaderSystem : SystemBase
 
         foreach ((RefRW<DesiredVelocity> desired, RefRO<MoveSpeed> speed) in SystemAPI.Query<RefRW<DesiredVelocity>, RefRO<MoveSpeed>>().WithAll<PlayerTag>())
         {
-            desired.ValueRW.Value = new float3(cameraFixedDirection.x, 0, cameraFixedDirection.z) * speed.ValueRO.Value;
+            desired.ValueRW.value = new float3(cameraFixedDirection.x, 0, cameraFixedDirection.z) * speed.ValueRO.value;
         }
 
         if (inputSystem.Player.Interact.WasPressedThisFrame())
@@ -60,12 +60,15 @@ public partial class InputReaderSystem : SystemBase
                 EntityManager.SetComponentData(entity, new SummonSkeletonEvent { count = spellConfig.ValueRO.spawnCount });
                 EntityManager.SetComponentEnabled<SummonSkeletonEvent>(entity, true);
 
-                Entity visualEntity = visual.ValueRO.Value;
+                Entity visualEntity = visual.ValueRO.value;
                 AnimationDirection facing = EntityManager.GetComponentData<AnimRequest>(visualEntity).direction;
                 EntityManager.SetComponentData(visualEntity, new IsOneShot { animation = Animation.Cast, animationDirection = facing });
                 EntityManager.SetComponentEnabled<IsOneShot>(visualEntity, true);
 
-                float castDuration = GetClipDuration(visualEntity, Animation.Cast, facing);
+                DynamicBuffer<AnimationClipData> clips = SystemAPI.GetBuffer<AnimationClipData>(visualEntity);
+                if (!AnimationActions.TryGetClip(Animation.Cast, facing, clips, out AnimationClipData castClip)) continue;
+
+                float castDuration  = castClip.frameCount / castClip.fps;
                 float remainingTime = EntityManager.GetComponentData<MovementBlocked>(entity).remainingTime;
                 EntityManager.SetComponentData(entity, new MovementBlocked { remainingTime = math.max(remainingTime, castDuration) });
                 EntityManager.SetComponentEnabled<MovementBlocked>(entity, true);
@@ -86,20 +89,7 @@ public partial class InputReaderSystem : SystemBase
 
     }
 
-    float GetClipDuration(Entity visualEntity, Animation animation, AnimationDirection direction)
-    {
-        DynamicBuffer<AnimationClipData> clips = EntityManager.GetBuffer<AnimationClipData>(visualEntity);
-
-        foreach (AnimationClipData clip in clips)
-        {
-            if (clip.role != animation || clip.direction != direction) continue;
-
-            AnimationClipData resolved = clip.overrideTo >= 0 ? clips[clip.overrideTo] : clip;
-            return resolved.frameCount / resolved.fps;
-        }
-
-        return 0f;
-    }
+    
 
     protected override void OnStopRunning() => inputSystem.Disable();
 }

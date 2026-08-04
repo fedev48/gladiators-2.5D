@@ -7,11 +7,11 @@ public struct GridBlueprintTag    : IComponentData { }
 
 public struct FlowFieldMap : IComponentData
 {
-    public int FlowFieldId;
-    public int DestinationCellIndex;
+    public int flowFieldId;
+    public int destinationCellIndex;
 }
 
 public struct FlowFieldPoolSingleton : IComponentData
 {
-    public NativeList<Entity> Pool;
+    public NativeList<Entity> pool;
 }

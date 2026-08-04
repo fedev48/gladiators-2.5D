@@ -1,3 +1,4 @@
+using System;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -10,6 +11,9 @@ public class PlayerAuthoring : MonoBehaviour
     [SerializeField] float skeletonSpawnMaxRadius = 8f;
     [SerializeField] int skeletonSpawnCount = 3;
     [SerializeField] float skeletonSpawnInterval = 0.3f;
+    [SerializeField] float knockbackMultiplier = 1f;
+    [SerializeField] float knockbackDurationMultiplier = 1f;
+    [SerializeField] int health;
 
     public class Baker : Baker<PlayerAuthoring>
     {
@@ -19,11 +23,12 @@ public class PlayerAuthoring : MonoBehaviour
 
             AddComponent(entity, new PlayerTag());
             AddComponent(entity, new UnitTag());
+            AddComponent(entity, new Team { value = Teams.ALLY });
             AddComponent(entity, new UnitMovementAnimTag());
             Entity visualEntity = GetEntity(authoring.GetComponentInChildren<SpriteAnimatorAuthoring>(), TransformUsageFlags.Dynamic);
-            AddComponent(entity, new VisualEntity { Value = visualEntity });
+            
             AddComponent(entity, new ShouldSnapToFloorTag());
-            AddComponent(entity, new PhysicsGravityFactor { Value = 0f });
+            
             AddComponent(entity, new SummonSkeletonEvent());
             AddComponent(entity, new BulletSpellConfig());
             AddComponent(entity, new FireBulletEvent());
@@ -36,16 +41,24 @@ public class PlayerAuthoring : MonoBehaviour
                 interval     = authoring.skeletonSpawnInterval
             });
             SetComponentEnabled<SummonSkeletonEvent>(entity, false);
+            AddComponent(entity, new VisualEntity           { value = visualEntity });
+            AddComponent(entity, new PhysicsGravityFactor   { Value = 0f });
+            AddComponent(entity, new MoveSpeed              { value = authoring.playerSpeed });
+            AddComponent(entity, new Health                 { value = authoring.health });
+            AddComponent(entity, new KnockbackVelocity
+            {
+                multiplier      = authoring.knockbackMultiplier,
+                durationMultiplier = authoring.knockbackDurationMultiplier
+            });
+            
             //Movement components
-
-            AddComponent(entity, new MoveSpeed     { Value = authoring.playerSpeed });
             AddComponent(entity, new CurrentVelocity {});
-
             AddComponent(entity, new DesiredVelocity {});
-            AddComponent(entity, new KnockbackVelocity {});
             AddComponent(entity, new SeparationVelocity {});
             AddComponent(entity, new MovementBlocked());
             SetComponentEnabled<MovementBlocked>(entity, false);
+            AddComponent(entity, new RecievingDamage());
+            SetComponentEnabled<RecievingDamage>(entity, false);
 
         }
     }

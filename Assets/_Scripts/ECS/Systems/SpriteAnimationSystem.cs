@@ -1,13 +1,29 @@
 using Unity.Burst;
 using Unity.Entities;
+using Unity.Mathematics;
 
 [BurstCompile]
 public partial struct SpriteAnimationSystem : ISystem
 {
+#if SYSTEM_DEBUG
+    ComponentLookup<DebugAnimationOverride> _debugLookup;
+
+    public void OnCreate(ref SystemState state)
+    {
+        _debugLookup = state.GetComponentLookup<DebugAnimationOverride>(isReadOnly: true);
+    }
+#endif
+
     [BurstCompile]
-    public readonly void OnUpdate(ref SystemState state)
+    public void OnUpdate(ref SystemState state)
     {
         float deltaTime = SystemAPI.Time.DeltaTime;
+
+        state.Dependency = new DamageAnimationJob { DeltaTime = deltaTime }.ScheduleParallel(state.Dependency);
+
+#if SYSTEM_DEBUG
+        _debugLookup.Update(ref state);
+#endif
 
         foreach ((RefRW<SpriteAnimationState> stateRef,
                   RefRO<AnimRequest> request,
@@ -15,7 +31,8 @@ public partial struct SpriteAnimationSystem : ISystem
                   EnabledRefRW<IsOneShot> oneShotEnabled,
                   DynamicBuffer<AnimationClipData> clips,
                   DynamicBuffer<SpriteFrameElement> frames,
-                  RefRW<SpriteUVRect> uvRef) in
+                  RefRW<SpriteUVRect> uvRef,
+                  Entity entity) in
             SystemAPI.Query<RefRW<SpriteAnimationState>,
                             RefRO<AnimRequest>,
                             RefRO<IsOneShot>,
@@ -23,13 +40,24 @@ public partial struct SpriteAnimationSystem : ISystem
                             DynamicBuffer<AnimationClipData>,
                             DynamicBuffer<SpriteFrameElement>,
                             RefRW<SpriteUVRect>>()
-                .WithPresent<IsOneShot>())
+                .WithPresent<IsOneShot>()
+                .WithEntityAccess())
         {
             ref SpriteAnimationState animState = ref stateRef.ValueRW;
 
             bool playingOneShot = oneShotEnabled.ValueRO;
             Animation          targetRole = playingOneShot ? oneShot.ValueRO.animation          : request.ValueRO.role;
             AnimationDirection targetDir  = playingOneShot ? oneShot.ValueRO.animationDirection : request.ValueRO.direction;
+
+#if SYSTEM_DEBUG
+            if (_debugLookup.HasComponent(entity) && _debugLookup.IsComponentEnabled(entity))
+            {
+                DebugAnimationOverride debug = _debugLookup[entity];
+                targetRole     = debug.animation;
+                targetDir      = debug.direction;
+                playingOneShot = false; //loop the debugged clip instead of ending it as a one shot
+            }
+#endif
 
             if (targetRole != animState.currentAnimation)
             {
@@ -77,6 +105,28 @@ public partial struct SpriteAnimationSystem : ISystem
             }
 
             uvRef.ValueRW.value = frames[clip.startIndex + animState.currentFrame].uv;
+        }
+    }
+
+    [BurstCompile]
+    public partial struct DamageAnimationJob : IJobEntity
+    {
+        public float DeltaTime;
+
+        public void Execute(ref DamageAnimation damageAnimation, EnabledRefRW<DamageAnimation> enabled, ref SpriteMaskColor maskColor)
+        {
+            damageAnimation.duration -= DeltaTime;
+
+            if (damageAnimation.duration <= 0f)
+            {
+                damageAnimation.duration = 0f;
+                maskColor.value = new float4(0f, 0f, 0f, 1f);
+                enabled.ValueRW = false;
+                return;
+            }
+
+            bool white = (int)(damageAnimation.duration * 10f) % 2 == 1;
+            maskColor.value = white ? new float4(1f, 1f, 1f, 1f) : new float4(1f, 0f, 0f, 1f);
         }
     }
 
