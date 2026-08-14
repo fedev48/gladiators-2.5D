@@ -11,6 +11,7 @@ public class PlayerAuthoring : MonoBehaviour
     [SerializeField] float skeletonSpawnMaxRadius = 8f;
     [SerializeField] int skeletonSpawnCount = 3;
     [SerializeField] float skeletonSpawnInterval = 0.3f;
+    [SerializeField, Range(0f, 89f)] float bulletFireAngle = 0f;
     [SerializeField] float knockbackMultiplier = 1f;
     [SerializeField] float knockbackDurationMultiplier = 1f;
     [SerializeField] int health;
@@ -27,10 +28,10 @@ public class PlayerAuthoring : MonoBehaviour
             AddComponent(entity, new UnitMovementAnimTag());
             Entity visualEntity = GetEntity(authoring.GetComponentInChildren<SpriteAnimatorAuthoring>(), TransformUsageFlags.Dynamic);
             
-            AddComponent(entity, new ShouldSnapToFloorTag());
+            AddComponent(entity, new AffectedByGrativy());
             
             AddComponent(entity, new SummonSkeletonEvent());
-            AddComponent(entity, new BulletSpellConfig());
+            AddComponent(entity, new BulletSpellConfig { fireAngle = authoring.bulletFireAngle });
             AddComponent(entity, new FireBulletEvent());
             SetComponentEnabled<FireBulletEvent>(entity, false);
             AddComponent(entity, new SkeletonSpellConfig
@@ -73,7 +74,7 @@ public struct SkeletonSpellConfig : IComponentData
 }
 
 public struct PlayerTag           : IComponentData {}
-public struct BulletSpellConfig   : IComponentData {}
+public struct BulletSpellConfig   : IComponentData { public float fireAngle; }
 public struct SummonSkeletonEvent : IComponentData, IEnableableComponent { public int count; }
 public struct FireBulletEvent     : IComponentData, IEnableableComponent { public float3 direction; }
 

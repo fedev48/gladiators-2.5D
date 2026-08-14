@@ -37,10 +37,16 @@ public partial struct BulletDestroySystem : ISystem
 
         foreach (TriggerEvent triggerEvent in simulation.AsSimulation().TriggerEvents)
         {
-            if (bulletLookup.HasComponent(triggerEvent.EntityA))
-                ecb.SetComponentEnabled<BulletDestroyTag>(triggerEvent.EntityA, true);
-            if (bulletLookup.HasComponent(triggerEvent.EntityB))
-                ecb.SetComponentEnabled<BulletDestroyTag>(triggerEvent.EntityB, true);
+            TryDestroy(triggerEvent.EntityA, triggerEvent.EntityB, ecb);
+            TryDestroy(triggerEvent.EntityB, triggerEvent.EntityA, ecb);
         }
+    }
+
+    void TryDestroy(Entity bullet, Entity other, EntityCommandBuffer ecb)
+    {
+        if (!bulletLookup.HasComponent(bullet)) return;
+        if (bulletLookup[bullet].owner == other) return;
+
+        ecb.SetComponentEnabled<BulletDestroyTag>(bullet, true);
     }
 }

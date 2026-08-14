@@ -5,7 +5,7 @@ using Unity.Physics;
 using Unity.Transforms;
 
 [BurstCompile]
-[UpdateBefore(typeof(StateManagerSystem))]
+[UpdateAfter(typeof(StateManagerSystem))]
 [UpdateAfter(typeof(MovementAnimRequestSystem))]
 public partial struct StateSpawnSkeletonSystem : ISystem
 {
@@ -68,7 +68,7 @@ public partial struct StateSpawnSkeletonSystem : ISystem
 
     void ExitState(ref SystemState state, Entity entity)
     {
-        state.EntityManager.SetComponentEnabled<ShouldSnapToFloorTag>(entity, true);
+        state.EntityManager.SetComponentEnabled<AffectedByGrativy>(entity, true);
         state.EntityManager.SetComponentEnabled<ChangeStateRequest>(entity, true);
         DynamicBuffer<ChangeStateRequest> requests =  state.EntityManager.GetBuffer<ChangeStateRequest>(entity);
 

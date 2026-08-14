@@ -12,6 +12,7 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
     public Animation currentAnimation = 0;
     public Vector2 flipPivotOffset  = Vector2.zero;
     public float   cameraYAngle     = -135f;
+    public bool    fourDirections   = true;
     public bool               debugOverride    = false;
     public Animation          debugAnimation   = Animation.Idle;
     public AnimationDirection debugDirection   = AnimationDirection.Front;
@@ -96,13 +97,18 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
             AddComponent(entity, new SpriteMaskColor { value = new float4(0f, 0f, 0f, 1f) });
             AddComponent(entity, new DamageAnimation());
             SetComponentEnabled<DamageAnimation>(entity, false);
+            
             AddComponent(entity, new IsOneShot
             {
                 animation = Animation.None,
                 animationDirection = 0
             });
             SetComponentEnabled<IsOneShot>(entity, false);
-            AddComponent(entity, new CameraFacingData { invRotation = math.inverse(quaternion.RotateY(math.radians(authoring.cameraYAngle))) });
+            AddComponent(entity, new CameraFacingData
+            {
+                invRotation    = math.inverse(quaternion.RotateY(math.radians(authoring.cameraYAngle))),
+                fourDirections = authoring.fourDirections
+            });
 
 #if SYSTEM_DEBUG
             AddComponent(entity, new DebugAnimationOverride
@@ -220,5 +226,6 @@ public struct SpriteMaskColor : IComponentData
 public struct CameraFacingData : IComponentData
 {
     public quaternion invRotation;
+    public bool       fourDirections;
 }
 #endregion

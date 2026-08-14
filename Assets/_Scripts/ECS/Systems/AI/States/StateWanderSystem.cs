@@ -4,6 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
+[UpdateAfter(typeof(StateManagerSystem))]
 [UpdateBefore(typeof(MoveToDestinationSystem))]
 public partial struct StateWanderSystem : ISystem
 {
@@ -29,16 +30,13 @@ public partial struct StateWanderSystem : ISystem
 
         foreach ((RefRO<LocalTransform> transform,
                   RefRW<MoveDestination> destination,
-                  RefRO<Team> team,
                   Entity entity) in
             SystemAPI.Query<RefRO<LocalTransform>,
-                            RefRW<MoveDestination>,
-                            RefRO<Team>>()
+                            RefRW<MoveDestination>>()
+                .WithAll<WanderState>()
                 .WithPresent<MoveDestination>()
                 .WithEntityAccess())
         {
-            if (team.ValueRO.value != Teams.ENEMY) continue;
-
             if (SystemAPI.IsComponentEnabled<MoveDestination>(entity))
             {
                 float3 toDestination = destination.ValueRO.value - transform.ValueRO.Position;

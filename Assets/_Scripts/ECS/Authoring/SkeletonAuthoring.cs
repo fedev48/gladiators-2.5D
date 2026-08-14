@@ -15,15 +15,27 @@ public class SkeletonAuthoring : MonoBehaviour
     public int   health = 10;
 
     [Header("Targeting")]
-    public int   targetSearchCellRadius    = 5;
-    public float targetScanInterval        = 0.5f;
-    public float targetRetentionMultiplier = 1.3f;
-    public float targetSwitchImprovement   = 0.25f;
-    public float attackerLockDuration      = 1.5f;
+    public int   targetSearchRadius                 = 5;
+    public int   targetSearchRadiuosForSurrounded   = 5;
+    public float targetScanInterval                 = 0.5f;
+    public float targetRetentionMultiplier          = 1.3f;
+    public float targetSwitchImprovement            = 0.25f;
+    public float attackerLockDuration               = 1.5f;
+    public float attackerDamageThreshold            = 5f;
+    public float attackerDamageDecay                = 2f;
+
+    [Header("Melee attack")]
+    public float attackRange       = 1.5f;
+    public float attackHitRadius   = 1f;
+    public float attackDamage      = 3f;
+    public float attackKnockback   = 20f;
+    public float attackRecovery    = 0.5f;
+
 
 
     public class Baker : Baker<SkeletonAuthoring>
     {
+        const float STOP_DISTANCE_FACTOR = 0.8f; 
         public override void Bake(SkeletonAuthoring authoring)
         {
             Entity entity = GetEntity(TransformUsageFlags.Dynamic);
@@ -47,8 +59,8 @@ public class SkeletonAuthoring : MonoBehaviour
             AddComponent(entity, new MoveDestination());
             SetComponentEnabled<MoveDestination>(entity, false);
 
-            AddComponent(entity, new ShouldSnapToFloorTag());
-            SetComponentEnabled<ShouldSnapToFloorTag>(entity, false);
+            AddComponent(entity, new AffectedByGrativy());
+            SetComponentEnabled<AffectedByGrativy>(entity, false);
 
             AddComponent(entity, new SkeletonConfig
             {
@@ -67,7 +79,7 @@ public class SkeletonAuthoring : MonoBehaviour
             AddComponent(entity, new UsingPathfinding());
             AddComponent(entity, new SeparationConfig
             {
-                radius = authoring.separationRadius,
+                radius    = authoring.separationRadius,
                 strenght  = authoring.separationStrenght
             });
             AddComponent(entity, new SeparationVelocity());
@@ -77,7 +89,15 @@ public class SkeletonAuthoring : MonoBehaviour
             //state machine tags
             AddComponent(entity, new SpawnState());
             AddComponent(entity, new FollowState());
-            AddComponent(entity, new MeleeAttackState());
+            AddComponent(entity, new MeleeAttackState
+            {
+                attackRange         = authoring.attackRange,
+                stopDistance        = authoring.attackRange * STOP_DISTANCE_FACTOR,
+                hitRadius           = authoring.attackHitRadius,
+                damage              = authoring.attackDamage,
+                knockbackStrength   = authoring.attackKnockback,
+                recovery            = authoring.attackRecovery,
+            });
             SetComponentEnabled<FollowState> (entity, false);
             SetComponentEnabled<MeleeAttackState> (entity, false);
             SetComponentEnabled<SpawnState>  (entity, true);
@@ -87,20 +107,24 @@ public class SkeletonAuthoring : MonoBehaviour
             AddBuffer<ChangeStateRequest>(entity);
             SetComponentEnabled<ChangeStateRequest>(entity, false);
 
-            //targeting
-            AddComponent(entity, new TargetingConfig
+            //blackboard
+            AddComponent(entity, new BlackboardSensorConfigAndState
             {
-                searchCellRadius     = authoring.targetSearchCellRadius,
-                scanInterval         = authoring.targetScanInterval,
-                retentionMultiplier  = authoring.targetRetentionMultiplier,
-                switchImprovement    = authoring.targetSwitchImprovement,
-                attackerLockDuration = authoring.attackerLockDuration
+                
+                clock                            = -1f,
+                searchRadiusForTarget            = authoring.targetSearchRadius,
+                searchRadiusForSurrouded         = authoring.targetSearchRadiuosForSurrounded,
+                scanInterval                     = authoring.targetScanInterval,
+                distanceTargetReleaseMultiplier  = authoring.targetRetentionMultiplier,
+                distanceDifferenceToSwitchTarget = authoring.targetSwitchImprovement,
+                retaliationDamageThreshold       = authoring.attackerDamageThreshold,
+                retaliationDamageDecay           = authoring.attackerDamageDecay
+
             });
-            AddComponent(entity, new TargetingState { scanCooldown = -1f });
+
             AddComponent(entity, new HasTarget());
             SetComponentEnabled<HasTarget>(entity, false);
             AddComponent(entity, new LastAttacker());
-            SetComponentEnabled<LastAttacker>(entity, false);
         }
     }
 }

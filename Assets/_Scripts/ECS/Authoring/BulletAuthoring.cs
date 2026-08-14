@@ -7,13 +7,19 @@ public class BulletAuthoring : MonoBehaviour
 {
     [SerializeField] float speed = 12f;
     [SerializeField] float lifetime = 10f;
+    [SerializeField, Range(0f, 10f)] float gravityScale = 1f;
 
     public class Baker : Baker<BulletAuthoring>
     {
         public override void Bake(BulletAuthoring authoring)
         {
             Entity entity = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(entity, new BulletConfig { speed = authoring.speed, lifetime = authoring.lifetime });
+            AddComponent(entity, new BulletConfig
+            {
+                speed        = authoring.speed,
+                lifetime     = authoring.lifetime,
+                gravityScale = authoring.gravityScale
+            });
             AddComponent(entity, new PhysicsGravityFactor { Value = 0f });
             AddComponent(entity, new BulletDestroyTag());
             SetComponentEnabled<BulletDestroyTag>(entity, false);
@@ -39,5 +45,7 @@ public struct BulletConfig : IComponentData
 {
     public float  speed;
     public float  lifetime;
-    public float3 direction;
+    public float  gravityScale;
+    public float3 velocity;
+    public Entity owner;
 }

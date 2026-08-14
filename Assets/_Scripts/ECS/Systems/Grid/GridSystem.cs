@@ -99,6 +99,18 @@ partial struct GridSystem : ISystem
         return isWall;
     }
 
+    public static bool HasLineOfSight(float3 from, float3 to, in CollisionWorld collisionWorld, uint wallLayerMask)
+    {
+        RaycastInput ray = new RaycastInput
+        {
+            Start  = from,
+            End    = to,
+            Filter = new CollisionFilter { BelongsTo = ~0u, CollidesWith = wallLayerMask, GroupIndex = 0 }
+        };
+
+        return !collisionWorld.CastRay(ray);
+    }
+
     public static float3 CoordsToWorldPosition(int x, int y, GridConfig gridConfig)
     {
         return new float3(x * gridConfig.cellSize, 0, y * gridConfig.cellSize);
@@ -110,7 +122,9 @@ partial struct GridSystem : ISystem
         return new float3(CoordsToWorldPosition(coords.x, coords.y, gridConfig));
     }
 
-    public static int2 WorldPosToCoords (float3 position, GridConfig gridConfig) => new int2 ((int)(position.x/gridConfig.cellSize), (int)(position.z/gridConfig.cellSize));
+    public static int2 WorldPosToCoords (float3 position, float cellSize) => (int2)math.floor(position.xz / cellSize);
+
+    public static int2 WorldPosToCoords (float3 position, GridConfig gridConfig) => WorldPosToCoords(position, gridConfig.cellSize);
     
 
     public static int WorldPosToIndex(float3 position, GridConfig gridConfig)
@@ -154,6 +168,43 @@ partial struct GridSystem : ISystem
         }
 
         return surroundingCoords; //this is just a coords list
+    }
+
+    //each shadow packs: xy = direction to the wall, z = distance to it, w = cosine of its half angle
+    public static NativeList<float4> BuildWallShadows(in FixedList4096Bytes<int2> surroundingCells, float2 originCellCenter, in GridConfig config, in DynamicBuffer<CellComponents> cells, float shadowWidthMult)
+    {
+        NativeList<float4> wallShadows = new(Allocator.Temp);
+
+        foreach (int2 coords in surroundingCells)
+        {
+            if (!CheckIfCoordsIsInBounds(coords, config)) continue;
+            if (cells[CoordsToIndex(coords.x, coords.y, config)].cost != WALL_COST) continue;
+
+            float2 toWall = (new float2(coords.x, coords.y) + 0.5f) * config.cellSize - originCellCenter;
+            float wallDistance = math.length(toWall);
+            if (wallDistance < 0.0001f) continue;
+
+            float shadowHalfAngle = math.atan(config.cellSize * 0.5f / wallDistance) * shadowWidthMult;
+            wallShadows.Add(new float4(toWall / wallDistance, wallDistance, math.cos(shadowHalfAngle)));
+        }
+
+        return wallShadows;
+    }
+
+    public static bool IsBehindWall(float2 toCell, NativeList<float4> wallShadows)
+    {
+        float cellDistance = math.length(toCell);
+        if (cellDistance < 0.0001f) return false;
+
+        float2 direction = toCell / cellDistance;
+
+        foreach (float4 shadow in wallShadows)
+        {
+            if (cellDistance <= shadow.z) continue;
+            if (math.dot(direction, shadow.xy) > shadow.w) return true;
+        }
+
+        return false;
     }
 }
 

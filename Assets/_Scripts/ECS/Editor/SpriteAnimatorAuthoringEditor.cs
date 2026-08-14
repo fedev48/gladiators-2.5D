@@ -35,6 +35,7 @@ public class SpriteAnimatorAuthoringEditor : Editor
 
         EditorGUILayout.PropertyField(serializedObject.FindProperty("flipPivotOffset"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("cameraYAngle"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("fourDirections"), new GUIContent("Four Directions"));
 
 #if SYSTEM_DEBUG
         EditorGUILayout.Space(8);

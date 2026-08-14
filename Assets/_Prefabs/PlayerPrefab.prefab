@@ -120,6 +120,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 12
+    hitFrame: -1
     isOverride: 0
     overrideTo: 0
     flip: 0
@@ -139,6 +140,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 0
     flip: 1
@@ -158,6 +160,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 0
     flip: 0
@@ -177,6 +180,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 0
     flip: 1
@@ -196,6 +200,7 @@ MonoBehaviour:
     - {fileID: 856486429, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: 35051676, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 12
+    hitFrame: -1
     isOverride: 0
     overrideTo: 0
     flip: 0
@@ -215,6 +220,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 4
     flip: 1
@@ -234,6 +240,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 4
     flip: 1
@@ -253,6 +260,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 4
     flip: 0
@@ -276,6 +284,7 @@ MonoBehaviour:
     - {fileID: 1033570239, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -239054279, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 12
+    hitFrame: -1
     isOverride: 0
     overrideTo: 4
     flip: 0
@@ -295,6 +304,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 8
     flip: 1
@@ -314,6 +324,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 8
     flip: 0
@@ -333,6 +344,7 @@ MonoBehaviour:
     - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     fps: 0
+    hitFrame: -1
     isOverride: 1
     overrideTo: 8
     flip: 1
@@ -340,6 +352,7 @@ MonoBehaviour:
   currentAnimation: 0
   flipPivotOffset: {x: -0.004, y: 0}
   cameraYAngle: -135
+  fourDirections: 0
   debugOverride: 1
   debugAnimation: 0
   debugDirection: 0
@@ -443,7 +456,7 @@ MonoBehaviour:
   playerSpeed: 5
   skeletonSpawnMinRadius: 3
   skeletonSpawnMaxRadius: 8
-  skeletonSpawnCount: 300
+  skeletonSpawnCount: 1
   skeletonSpawnInterval: 0.3
   knockbackMultiplier: 0.8
   knockbackDurationMultiplier: 1

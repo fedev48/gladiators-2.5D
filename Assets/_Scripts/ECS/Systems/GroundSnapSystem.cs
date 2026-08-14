@@ -15,15 +15,23 @@ public partial struct GroundSnapSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
 
-        foreach (var (transform, _) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<ShouldSnapToFloorTag>>())
+        float deltaTime = SystemAPI.Time.DeltaTime;
+
+        foreach (var (transform, fall) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<AffectedByGrativy>>())
         {
-            float3 origin = transform.ValueRO.Position + new float3(0, 5f, 0);
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 50f, groundMask))
+            fall.ValueRW.verticalVelocity -= SimConstants.GRAVITY * deltaTime;
+
+            float3 pos = transform.ValueRO.Position;
+            pos.y += fall.ValueRO.verticalVelocity * deltaTime;
+
+            float3 origin = pos + new float3(0, 5f, 0);
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 50f, groundMask) && pos.y <= hit.point.y)
             {
-                var pos = transform.ValueRO.Position;
                 pos.y = hit.point.y;
-                transform.ValueRW.Position = pos;
+                fall.ValueRW.verticalVelocity = 0f;
             }
+
+            transform.ValueRW.Position = pos;
         }
     }
 }

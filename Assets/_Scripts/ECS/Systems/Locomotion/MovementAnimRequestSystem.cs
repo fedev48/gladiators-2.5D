@@ -37,21 +37,20 @@ public partial struct MovementAnimRequestSystem : ISystem
                 continue;
             }
 
-            quaternion invRotation = _cameraLookup.HasComponent(visualEntity)
-                ? _cameraLookup[visualEntity].invRotation
-                : quaternion.identity;
+            quaternion invRotation    = quaternion.identity;
+            bool       fourDirections = true;
+
+            if (_cameraLookup.HasComponent(visualEntity))
+            {
+                CameraFacingData facingData = _cameraLookup[visualEntity];
+                invRotation    = facingData.invRotation;
+                fourDirections = facingData.fourDirections;
+            }
+
             float3 screenDir = math.mul(invRotation, worldDir);
 
             request.ValueRW.role      = Animation.Walk;
-            request.ValueRW.direction = FacingDirection(screenDir);
+            request.ValueRW.direction = AnimationActions.FacingDirection(screenDir, fourDirections);
         }
-    }
-
-    static AnimationDirection FacingDirection(float3 direction)
-    {
-        float absX = math.abs(direction.x);
-        float absZ = math.abs(direction.z);
-        if (absZ >= absX) return direction.z >= 0f ? AnimationDirection.Back      : AnimationDirection.Front;
-        else              return direction.x >= 0f ? AnimationDirection.SideRight : AnimationDirection.SideLeft;
     }
 }

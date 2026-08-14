@@ -93,11 +93,11 @@ partial struct StateTransitionSystem : ISystem
 
     static bool NoTarget (in FSMBlackBoard fSMBlackBoard) => !HasTarget(fSMBlackBoard);
 
-    static bool TargetInRange (in FSMBlackBoard fSMBlackBoard, float3 selfPosition, float threshold) => HasTarget(fSMBlackBoard) && math.lengthsq(fSMBlackBoard.targetLocation - selfPosition) < threshold * threshold;
+    static bool TargetInRange (in FSMBlackBoard fSMBlackBoard, float3 selfPosition, float threshold) => HasTarget(fSMBlackBoard) && math.lengthsq((fSMBlackBoard.targetLocation - selfPosition).xz) < threshold * threshold;
 
     static bool TargetOutOfRange (in FSMBlackBoard fSMBlackBoard, float3 selfPosition, float threshold) => HasTarget(fSMBlackBoard) && !TargetInRange(fSMBlackBoard, selfPosition, threshold);
 
-    static bool EnemiesAroundAbove (in FSMBlackBoard fSMBlackBoard, int threshold) => fSMBlackBoard.enemiesSurrounding > threshold;
+    static bool EnemiesAroundAbove (in FSMBlackBoard fSMBlackBoard, int threshold) => fSMBlackBoard.enemiesSurrounding >= threshold;
 
     static bool TargetVisible(
         in FSMBlackBoard fSMBlackBoard,

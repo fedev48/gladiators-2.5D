@@ -10,7 +10,7 @@ public partial struct BulletCleanupSystem : ISystem
 {
     //test explosion, same overlap the old input double-click shockwave used
     const float EXPLOSION_RADIUS   = 1f;
-    const float EXPLOSION_STRENGTH = 100f;
+    const float EXPLOSION_STRENGTH = 10f;
     const float EXPLOSION_DAMAGE   = 10f;
 
     private ComponentLookup<KnockbackVelocity> knockbackLookup;
@@ -46,23 +46,23 @@ public partial struct BulletCleanupSystem : ISystem
                 .WithAll<BulletDestroyTag>()
                 .WithEntityAccess())
         {
-            Explode(transform.ValueRO.Position, config.ValueRO.direction, collisionWorld, ref hits);
+            Explode(transform.ValueRO.Position, config.ValueRO.owner, collisionWorld, ref hits);
             ecb.DestroyEntity(entity);
         }
 
         hits.Dispose();
     }
 
-    void Explode(float3 center, float3 bulletDirection, in CollisionWorld collisionWorld, ref NativeList<DistanceHit> hits)
+    void Explode(float3 center, Entity owner, in CollisionWorld collisionWorld, ref NativeList<DistanceHit> hits)
     {
-        AttackActions.QueryHits(collisionWorld, center, EXPLOSION_RADIUS, CollisionFilter.Default, Entity.Null, ref hits);
+        AttackActions.QueryHits(collisionWorld, center, EXPLOSION_RADIUS, CollisionFilter.Default, owner, ref hits);
 
         foreach (DistanceHit hit in hits)
         {
             AttackActions.ResolveHit(
                 hit.Entity,
-                Entity.Null,
-                bulletDirection,
+                owner,
+                hit.Position - center,
                 EXPLOSION_DAMAGE,
                 EXPLOSION_STRENGTH,
                 ref healthLookup,

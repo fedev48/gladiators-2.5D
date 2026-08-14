@@ -33,7 +33,7 @@ partial struct UnitSeparationSystem : ISystem
         CalculateSeparationJob separationJob = new CalculateSeparationJob
         {
             unitsPerGridHashMap = spatialHash.hashMap,
-            cellSize            = config.cellSize
+            gridConfig          = config
         };
         state.Dependency = separationJob.ScheduleParallel(
             JobHandle.CombineDependencies(state.Dependency, spatialHash.producerHandle));
@@ -44,31 +44,37 @@ partial struct UnitSeparationSystem : ISystem
 partial struct CalculateSeparationJob : IJobEntity
 {
     [ReadOnly] public NativeParallelMultiHashMap<int2, HashedUnit> unitsPerGridHashMap;
-    public float cellSize;
+    public GridConfig gridConfig;
 
     void Execute(ref SeparationVelocity separationVector, in SeparationConfig separationConfig, in LocalTransform localTransform)
     {
-        int2 entityCellCoords = (int2)math.floor(localTransform.Position.xz / cellSize);
         float3 escapeVector = float3.zero;
         int entitiesCount = 0;
 
-        foreach (int2 neighbourCell in GridSystem.GetSurroundingCells(entityCellCoords, (int)math.ceil(separationConfig.radius/cellSize)))
-        {
-            foreach (HashedUnit otherUnit in unitsPerGridHashMap.GetValuesForKey(neighbourCell))
-            {
-                float2 distanceVector = otherUnit.position.xz - localTransform.Position.xz;
-                float distanceSq = math.lengthsq(distanceVector);
+        int2 centralCell = GridSystem.WorldPosToCoords(localTransform.Position, gridConfig);
+        int  cellRadius  = (int)math.ceil(separationConfig.radius / gridConfig.cellSize);
 
-                if (distanceSq > 0.0001f && distanceSq < separationConfig.radius*separationConfig.radius)
-                {
-                    entitiesCount++;
-                    float distance    = math.sqrt(distanceSq);
-                    float penetration = (separationConfig.radius - distance) / separationConfig.radius;
-                    float2 push       = (distanceVector / distance) * penetration;
-                    escapeVector += new float3(push.x, 0, push.y);
-                }
-            }
+        FixedList4096Bytes<int2> cells = GridSystem.GetSurroundingCells(centralCell, cellRadius);
+
+        NativeList<HashedUnit> unitsBuffer = new NativeList<HashedUnit>(64, Allocator.Temp);
+        EntitiesPositionToHashSystem.GetUnitsInCells(unitsPerGridHashMap, cells, ref unitsBuffer);
+
+        foreach (HashedUnit other in unitsBuffer)
+        {
+            float2 distanceVector = other.position.xz - localTransform.Position.xz;
+            float  distanceSq     = math.lengthsq(distanceVector);
+
+            if (distanceSq <= 0.0001f || distanceSq > separationConfig.radius * separationConfig.radius) continue;
+
+            float  distance       = math.sqrt(distanceSq);
+            float  penetration    = (separationConfig.radius - distance) / separationConfig.radius;
+            float2 push           = (distanceVector / distance) * penetration;
+
+            entitiesCount++;
+            escapeVector += new float3(push.x, 0, push.y);
         }
+
+        unitsBuffer.Dispose();
 
         if (entitiesCount > 0) escapeVector = -escapeVector/entitiesCount;
 

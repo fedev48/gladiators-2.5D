@@ -59,14 +59,9 @@ public class GridDebugVisualizer : MonoBehaviour
         Entity gridEntity = FindGridEntity(em);
         if (gridEntity == Entity.Null) return;
 
-        int targetCellX = -1, targetCellY = -1;
+        int targetCellIndex = -1;
         if (viewMode == GridViewMode.FlowField)
-        {
-            FlowFieldMap ff = em.GetComponentData<FlowFieldMap>(gridEntity);
-            int2 targetCell = GridSystem.IndexToCoords(ff.DestinationCellIndex, config);
-            targetCellX = targetCell.x;
-            targetCellY = targetCell.y;
-        }
+            targetCellIndex = em.GetComponentData<FlowFieldMap>(gridEntity).destinationCellIndex;
 
         var cells = em.GetBuffer<CellComponents>(gridEntity, isReadOnly: true);
 
@@ -83,7 +78,7 @@ public class GridDebugVisualizer : MonoBehaviour
             cellObj.transform.localScale = Vector3.one * config.cellSize;
 
             bool isWall   = cellData.cost == int.MaxValue;
-            bool isTarget = i == GridSystem.CoordsToIndex(targetCellX, targetCellY, config);
+            bool isTarget = i == targetCellIndex;
 
             var view = cellObj.GetComponent<CellDebugView>();
             if (view != null)
@@ -108,7 +103,7 @@ public class GridDebugVisualizer : MonoBehaviour
         Entity gridEntity = FindGridEntity(em);
         if (gridEntity == Entity.Null || !em.HasComponent<FlowFieldMap>(gridEntity)) return;
 
-        int destinationCellIndex = em.GetComponentData<FlowFieldMap>(gridEntity).DestinationCellIndex;
+        int destinationCellIndex = em.GetComponentData<FlowFieldMap>(gridEntity).destinationCellIndex;
 
         bool entityChanged      = gridEntity != trackedFlowField;
         bool destinationChanged = destinationCellIndex != trackedDestinationCellIndex;
@@ -149,7 +144,7 @@ public class GridDebugVisualizer : MonoBehaviour
                 .Build(em);
             if (q.IsEmpty) return Entity.Null;
 
-            NativeList<Entity> pool = q.GetSingleton<FlowFieldPoolSingleton>().Pool;
+            NativeList<Entity> pool = q.GetSingleton<FlowFieldPoolSingleton>().pool;
             if (flowFieldId < 0 || flowFieldId >= pool.Length) return Entity.Null;
             return pool[flowFieldId];
         }

@@ -119,7 +119,7 @@ MonoBehaviour:
     - {fileID: 790139612, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
     - {fileID: -1923302349, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
     - {fileID: 659582312, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
-    fps: 12
+    fps: 16
     hitFrame: -1
     isOverride: 0
     overrideTo: 0
@@ -197,7 +197,7 @@ MonoBehaviour:
     - {fileID: -128046820, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
     - {fileID: 1760544958, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
     - {fileID: -1561586731, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
-    fps: 12
+    fps: 16
     hitFrame: -1
     isOverride: 0
     overrideTo: 0
@@ -255,7 +255,7 @@ MonoBehaviour:
     - {fileID: 1511047549, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
     - {fileID: -1491225547, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
     - {fileID: 159379389, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
-    fps: 12
+    fps: 16
     hitFrame: -1
     isOverride: 0
     overrideTo: 4
@@ -279,7 +279,7 @@ MonoBehaviour:
     - {fileID: 1032179612, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: 1033570239, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
     - {fileID: -239054279, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
-    fps: 12
+    fps: 16
     hitFrame: -1
     isOverride: 0
     overrideTo: 4
@@ -344,10 +344,105 @@ MonoBehaviour:
     isOverride: 1
     overrideTo: 8
     flip: 1
+  - animation: 3
+    animationDirection: 1
+    frames:
+    - {fileID: -1280324962, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -2028107495, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1942573153, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -126725928, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 401994593, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 238775484, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -512865779, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1978400303, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -18983011, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1901820616, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1670803199, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 105662664, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 281331083, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1913725376, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 2026354952, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1567430552, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1581520442, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1326163048, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 788507592, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1527691789, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1630165465, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -2145163309, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1576780183, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1496082036, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 448245548, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 1912180636, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    fps: 16
+    hitFrame: 11
+    isOverride: 0
+    overrideTo: 8
+    flip: 1
+  - animation: 3
+    animationDirection: 2
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    hitFrame: -1
+    isOverride: 1
+    overrideTo: 12
+    flip: 1
+  - animation: 3
+    animationDirection: 0
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    hitFrame: -1
+    isOverride: 1
+    overrideTo: 12
+    flip: 0
+  - animation: 3
+    animationDirection: 3
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    hitFrame: -1
+    isOverride: 1
+    overrideTo: 12
+    flip: 1
   initialAnimation: 1
   currentAnimation: 0
-  flipPivotOffset: {x: 0, y: 0}
+  flipPivotOffset: {x: -0.00031, y: 0}
   cameraYAngle: -135
+  fourDirections: 1
   debugOverride: 0
   debugAnimation: 4
   debugDirection: 0
@@ -458,13 +553,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8677e64b8e1748449253c40f1fed3cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAuthoring
-  acceleration: 4
-  maxSpeed: 3
-  separationRadius: 3
+  acceleration: 1
+  maxSpeed: 2
+  separationRadius: 1
   separationSpeed: 15
   knockbackMultiplier: 1
   knockbackDurationMultiplier: 1
   health: 10
+  targetSearchRadius: 10
+  targetSearchRadiuosForSurrounded: 2
+  targetScanInterval: 0.5
+  targetRetentionMultiplier: 1.8
+  targetSwitchImprovement: 1
+  attackerLockDuration: 10
+  attackerDamageThreshold: 5
+  attackerDamageDecay: 2
+  attackRange: 2.5
+  attackHitRadius: 3
+  attackDamage: 3
+  attackKnockback: 10
+  attackRecovery: 0
+  bulletFireAngle: 60
+  rangeAttackRecovery: 2
+  rangeDistanceTolerance: 1
+  straightShotRange: 8
 --- !u!114 &6856108098644666008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,4 +589,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35a0645e659d1422c9b957299d77343f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StateTransitionsAuthoring
-  transitions: []
+  transitions:
+  - fromState: WanderState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    toState: RangeAttack, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    conditions: 130
+    rangeThreshold: 0
+    healthThreshold: 0
+    enemiesThreshold: 0
+    priority: 1
+  - fromState: RangeAttack, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    toState: MeleeAttackState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    conditions: 64
+    rangeThreshold: 2
+    healthThreshold: 0
+    enemiesThreshold: 1
+    priority: 1
+  - fromState: MeleeAttackState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    toState: RangeAttack, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    conditions: 1
+    rangeThreshold: 0
+    healthThreshold: 0
+    enemiesThreshold: 2
+    priority: 1

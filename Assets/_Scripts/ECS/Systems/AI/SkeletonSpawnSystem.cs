@@ -9,7 +9,8 @@ public partial struct SkeletonSpawnSystem : ISystem
 {
     private Unity.Mathematics.Random random;
     private int groundMask;
-    const float SHADOW_WIDTH_MULT = 1.2f; 
+    private uint wallLayerMask;
+    const float SIGHT_HEIGHT_OFFSET = 1f;
 
     public void OnCreate(ref SystemState state)
     {
@@ -17,8 +18,10 @@ public partial struct SkeletonSpawnSystem : ISystem
         state.RequireForUpdate<GridConfig>();
         state.RequireForUpdate<CellComponentsForCorpseCount>();
         state.RequireForUpdate<GridBlueprintTag>();
+        state.RequireForUpdate<Unity.Physics.PhysicsWorldSingleton>();
         random = Unity.Mathematics.Random.CreateFromIndex(1234);
         groundMask = LayerMask.GetMask("Ground");
+        wallLayerMask = (uint)(1 << LayerMask.NameToLayer("Walls"));
     }
 
     public void OnUpdate(ref SystemState state)
@@ -32,6 +35,8 @@ public partial struct SkeletonSpawnSystem : ISystem
         Entity blueprintEntity = SystemAPI.GetSingletonEntity<GridBlueprintTag>();
         DynamicBuffer<CellComponents> cells = SystemAPI.GetBuffer<CellComponents>(blueprintEntity);
         DynamicBuffer<CellComponentsForCorpseCount> corpses = SystemAPI.GetSingletonBuffer<CellComponentsForCorpseCount>();
+        Unity.Physics.CollisionWorld collisionWorld = SystemAPI.GetSingleton<Unity.Physics.PhysicsWorldSingleton>().CollisionWorld;
+        float3 sightOffset = new float3(0f, SIGHT_HEIGHT_OFFSET, 0f);
 
         EntityCommandBuffer ecb = SystemAPI
             .GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
@@ -55,26 +60,6 @@ public partial struct SkeletonSpawnSystem : ISystem
             int cellRadius = (int)math.ceil(spellConfig.ValueRO.maxRadius / config.cellSize);
             FixedList4096Bytes<int2> surroundingCells = GridSystem.GetSurroundingCells(playerCell, cellRadius, roundedCorners: true);
 
-            float2 playerCellCenter = (new float2(playerCell.x, playerCell.y) + 0.5f) * config.cellSize;
-
-            
-            NativeList<float4> wallShadows = new(Allocator.Temp);
-
-            foreach (int2 coords in surroundingCells)
-            {
-                if (!GridSystem.CheckIfCoordsIsInBounds(coords, config)) continue;
-                if (cells[GridSystem.CoordsToIndex(coords.x, coords.y, config)].cost != GridSystem.WALL_COST) continue;
-
-                float2 toWall = (new float2(coords.x, coords.y) + 0.5f) * config.cellSize - playerCellCenter;
-                float wallDistance = math.length(toWall);
-                if (wallDistance < 0.0001f) continue;
-
-                
-                float shadowHalfAngle = math.atan(config.cellSize * 0.5f / wallDistance) * SHADOW_WIDTH_MULT;
-                wallShadows.Add(new float4(toWall / wallDistance, wallDistance, math.cos(shadowHalfAngle)));
-            }
-
-           
             NativeList<int> cellsWithCorpses = new(Allocator.Temp);
 
             foreach (int2 coords in surroundingCells)
@@ -85,13 +70,8 @@ public partial struct SkeletonSpawnSystem : ISystem
                 if (cells[cellIndex].cost == GridSystem.WALL_COST) continue;
                 if (corpses[cellIndex].currentBuriedBodies <= 0) continue;
 
-                float2 toCell = (new float2(coords.x, coords.y) + 0.5f) * config.cellSize - playerCellCenter;
-                if (IsBehindWall(toCell, wallShadows)) continue;
-
                 cellsWithCorpses.Add(cellIndex);
             }
-
-            wallShadows.Dispose();
 
             for (int i = 0; i < count && cellsWithCorpses.Length > 0; i++)
             {
@@ -102,10 +82,13 @@ public partial struct SkeletonSpawnSystem : ISystem
                 float2 pointInCell = random.NextFloat2(float2.zero, new float2(config.cellSize, config.cellSize));
                 float3 candidate = new float3(cellOrigin.x + pointInCell.x, playerPos.y, cellOrigin.z + pointInCell.y);
 
-                if (!TryGetGroundPosition(candidate, groundMask, out float3 spawnPos))
+                bool reachable = TryGetGroundPosition(candidate, groundMask, out float3 spawnPos)
+                    && GridSystem.HasLineOfSight(playerPos + sightOffset, spawnPos + sightOffset, collisionWorld, wallLayerMask);
+
+                if (!reachable)
                 {
-                    cellsWithCorpses.RemoveAtSwapBack(pick); 
-                    i--; 
+                    cellsWithCorpses.RemoveAtSwapBack(pick);
+                    i--;
                     continue;
                 }
 
@@ -127,22 +110,6 @@ public partial struct SkeletonSpawnSystem : ISystem
             cellsWithCorpses.Dispose();
             state.EntityManager.SetComponentEnabled<SummonSkeletonEvent>(entity, false);
         }
-    }
-
-    private static bool IsBehindWall(float2 toCell, NativeList<float4> wallShadows)
-    {
-        float cellDistance = math.length(toCell);
-        if (cellDistance < 0.0001f) return false; 
-
-        float2 direction = toCell / cellDistance;
-
-        foreach (float4 shadow in wallShadows)
-        {
-            if (cellDistance <= shadow.z) continue; 
-            if (math.dot(direction, shadow.xy) > shadow.w) return true; 
-        }
-
-        return false;
     }
 
     private static bool TryGetGroundPosition(float3 candidate, int groundMask, out float3 result)

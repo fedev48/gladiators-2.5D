@@ -5,6 +5,8 @@ using Unity.Physics;
 
 public static class AttackActions
 {
+
+    public const int MAX_ACUMULATED_DAMAGE = 100;
     public static void QueryHits(
         in CollisionWorld collisionWorld,
         float3 center,
@@ -46,8 +48,28 @@ public static class AttackActions
 
         if (attacker != Entity.Null && lastAttackerLookup.HasComponent(target))
         {
-            lastAttackerLookup[target] = new LastAttacker { entity = attacker, damage = damage };
-            lastAttackerLookup.SetComponentEnabled(target, true);
+            LastAttacker lastAttacker = lastAttackerLookup[target];
+
+            if (lastAttacker.entity == attacker)
+            {
+                lastAttacker.accumulatedDamage += damage;
+            }
+            else
+            {
+                lastAttacker.accumulatedDamage -= damage;
+
+                if (lastAttacker.accumulatedDamage <= 0f)
+                {
+                    lastAttacker.entity            = attacker;
+                    lastAttacker.accumulatedDamage = -lastAttacker.accumulatedDamage;
+                }
+            }
+
+            lastAttacker.accumulatedDamage = math.clamp(lastAttacker.accumulatedDamage, 0, MAX_ACUMULATED_DAMAGE);
+
+
+            lastAttackerLookup[target] = lastAttacker;
+
         }
 
         if (!knockbackLookup.HasComponent(target)) return;

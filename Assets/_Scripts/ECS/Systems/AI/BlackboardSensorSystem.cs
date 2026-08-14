@@ -15,8 +15,8 @@ partial struct BlackboardSensorSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         sensorQuery = SystemAPI.QueryBuilder()
-            .WithAllRW<FSMBlackBoard, TargetingState>()
-            .WithAll<TargetingConfig, Team, LocalTransform>()
+            .WithAllRW<FSMBlackBoard>()
+            .WithAll<BlackboardSensorConfigAndState, Team, LocalTransform>()
             .WithPresent<HasTarget, LastAttacker>()
             .Build();
 
@@ -24,14 +24,14 @@ partial struct BlackboardSensorSystem : ISystem
 
         state.RequireForUpdate(sensorQuery);
         state.RequireForUpdate<GridConfig>();
+        state.RequireForUpdate<UnitSpatialHashComponents>();
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         GridConfig gridConfig = SystemAPI.GetSingleton<GridConfig>();
-        UnitSpatialHashComponents spatialHash = state.EntityManager.GetComponentData<UnitSpatialHashComponents>(
-            state.WorldUnmanaged.GetExistingUnmanagedSystem<EntitiesPositionToHashSystem>());
+        UnitSpatialHashComponents spatialHash = SystemAPI.GetSingleton<UnitSpatialHashComponents>();
 
         transformLookup.Update(ref state);
 
@@ -39,11 +39,11 @@ partial struct BlackboardSensorSystem : ISystem
         {
             unitsPerGridHashMap = spatialHash.hashMap,
             transformLookup     = transformLookup,
-            cellSize            = gridConfig.cellSize,
+            gridConfig          = gridConfig,
             deltaTime           = SystemAPI.Time.DeltaTime
         };
-        state.Dependency = senseJob.ScheduleParallel(
-            JobHandle.CombineDependencies(state.Dependency, spatialHash.producerHandle));
+
+        state.Dependency = senseJob.ScheduleParallel(JobHandle.CombineDependencies(state.Dependency, spatialHash.producerHandle));
     }
 }
 
@@ -51,106 +51,160 @@ partial struct BlackboardSensorSystem : ISystem
 [WithPresent(typeof(HasTarget), typeof(LastAttacker))]
 partial struct SenseTargetsJob : IJobEntity
 {
-    const int   MAX_CELL_RADIUS = 10;
-    const float STAGGER_STEP    = 0.6180339f;
 
     [ReadOnly] public NativeParallelMultiHashMap<int2, HashedUnit> unitsPerGridHashMap;
     [ReadOnly] public ComponentLookup<LocalTransform> transformLookup;
-    public float cellSize;
+    public GridConfig gridConfig;
     public float deltaTime;
 
     void Execute(
-        Entity entity,
         in LocalTransform localTransform,
         in Team team,
-        in TargetingConfig config,
-        ref TargetingState targetingState,
+        ref BlackboardSensorConfigAndState blackboardConfigAndState,
         ref FSMBlackBoard blackboard,
         EnabledRefRW<HasTarget> hasTarget,
-        ref LastAttacker lastAttacker,
-        EnabledRefRW<LastAttacker> attackerPending)
+        ref LastAttacker lastAttacker)
     {
-        float3 position = localTransform.Position;
+        if (transformLookup.TryGetComponent(blackboard.target, out LocalTransform transform)) blackboard.targetLocation = transform.Position;
+        else blackboard.target = Entity.Null;
+        CountSurroundingUnits(localTransform, team, blackboardConfigAndState, ref blackboard);
 
-        if (targetingState.scanCooldown < 0f)
-            targetingState.scanCooldown = config.scanInterval * math.frac(entity.Index * STAGGER_STEP);
-        else
-            targetingState.scanCooldown -= deltaTime;
+        SetHasTargetFlag(blackboard.target, hasTarget);
 
-        targetingState.lockRemaining = math.max(targetingState.lockRemaining - deltaTime, 0f);
+        if (!TryResetTimer(ref blackboardConfigAndState)) return;
 
-        bool targetValid = hasTarget.ValueRO && transformLookup.HasComponent(blackboard.target);
-        if (targetValid) blackboard.targetLocation = transformLookup[blackboard.target].Position;
 
-        if (attackerPending.ValueRO)
-        {
-            attackerPending.ValueRW = false;
+        if (CheckRetaliation(ref blackboardConfigAndState, ref blackboard, ref lastAttacker, hasTarget)) return;
 
-            bool canRetaliate = !targetValid || targetingState.lockRemaining <= 0f;
-            if (canRetaliate && transformLookup.HasComponent(lastAttacker.entity))
-            {
-                blackboard.target            = lastAttacker.entity;
-                blackboard.targetLocation    = transformLookup[lastAttacker.entity].Position;
-                targetingState.lockRemaining = config.attackerLockDuration;
-                targetValid                  = true;
-            }
+        // bool mustReplaceTarget = ShouldReleaseTarget(localTransform, blackboardConfigAndState, blackboard);
 
-            lastAttacker.entity = Entity.Null;
-            lastAttacker.damage = 0f;
-        }
+        TryGetNewTarget(localTransform, team, blackboardConfigAndState, ref blackboard, hasTarget);
 
-        int   searchCellRadius = math.min(config.searchCellRadius, MAX_CELL_RADIUS);
-        float searchRadius     = searchCellRadius * cellSize;
-        float searchRadiusSq   = searchRadius * searchRadius;
-
-        float currentDistanceSq = float.MaxValue;
-        if (targetValid)
-        {
-            currentDistanceSq = math.lengthsq(blackboard.targetLocation.xz - position.xz);
-            float leashRadius = searchRadius * config.retentionMultiplier;
-            if (currentDistanceSq > leashRadius * leashRadius) targetValid = false;
-        }
-
-        hasTarget.ValueRW = targetValid;
-
-        if (targetingState.scanCooldown > 0f) return;
-        targetingState.scanCooldown = config.scanInterval;
-
-        Entity bestCandidate   = Entity.Null;
-        float3 bestPosition    = float3.zero;
-        float  bestDistanceSq  = searchRadiusSq;
-        int    hostilesInRange = 0;
-
-        int2 unitCell = (int2)math.floor(position.xz / cellSize);
-        foreach (int2 neighbourCell in GridSystem.GetSurroundingCells(unitCell, searchCellRadius, roundedCorners: true))
-        {
-            foreach (HashedUnit candidate in unitsPerGridHashMap.GetValuesForKey(neighbourCell))
-            {
-                if (candidate.team == team.value) continue;
-
-                float distanceSq = math.lengthsq(candidate.position.xz - position.xz);
-                if (distanceSq > searchRadiusSq) continue;
-
-                hostilesInRange++;
-
-                if (distanceSq >= bestDistanceSq) continue;
-                bestDistanceSq = distanceSq;
-                bestCandidate  = candidate.entity;
-                bestPosition   = candidate.position;
-            }
-        }
-
-        blackboard.enemiesSurrounding = hostilesInRange;
-
-        if (bestCandidate == Entity.Null) return;
-        if (targetValid && targetingState.lockRemaining > 0f) return;
-
-        // candidate only steals the slot if it is close enough
-        float improvement = 1f - config.switchImprovement;
-        if (targetValid && bestDistanceSq > currentDistanceSq * improvement * improvement) return;
-
-        blackboard.target         = bestCandidate;
-        blackboard.targetLocation = bestPosition;
-        hasTarget.ValueRW         = true;
     }
+
+    private static void SetHasTargetFlag(Entity entity, EnabledRefRW<HasTarget> hasTarget) => hasTarget.ValueRW = entity != Entity.Null;
+
+    private bool CheckRetaliation(ref BlackboardSensorConfigAndState blackboardConfigAndState, ref FSMBlackBoard blackboard, ref LastAttacker lastAttacker, EnabledRefRW<HasTarget> hasTarget)
+    {
+        DecayRetaliationDamage(ref blackboardConfigAndState, ref lastAttacker);
+        if (HasEnoughDamageToRetaliate(blackboardConfigAndState, lastAttacker) && transformLookup.HasComponent(lastAttacker.entity))
+        {
+            // lastAttacker.accumulatedDamage -= blackboardConfigAndState.retaliationDamageThreshold;
+            blackboard.target = lastAttacker.entity;
+            SetHasTargetFlag(lastAttacker.entity, hasTarget);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool ShouldReleaseTarget(LocalTransform localTransform, BlackboardSensorConfigAndState blackboardConfigAndState, FSMBlackBoard blackboard)
+    {
+        if (transformLookup.TryGetComponent(blackboard.target, out LocalTransform targetTransform))
+        {
+            float releasDistance = blackboardConfigAndState.searchRadiusForTarget * blackboardConfigAndState.distanceTargetReleaseMultiplier;
+
+            if (math.distancesq(localTransform.Position, targetTransform.Position) < releasDistance * releasDistance)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void CountSurroundingUnits(LocalTransform localTransform, Team team, BlackboardSensorConfigAndState blackboardConfigAndState, ref FSMBlackBoard blackboard)
+    {
+        NativeList<HashedUnit> enemiesSurrounding = new NativeList<HashedUnit>(64, Allocator.Temp);
+        FillUnitsBuffer(localTransform, blackboardConfigAndState.searchRadiusForSurrouded, ref enemiesSurrounding);
+
+        int enemyCount = 0;
+        foreach (HashedUnit candidate in enemiesSurrounding)
+        {
+            if (candidate.team == team.value) continue;
+            if (math.distancesq(localTransform.Position,candidate.position) > blackboardConfigAndState.searchRadiusForSurrouded*blackboardConfigAndState.searchRadiusForSurrouded) continue; //needed because of grid quantization
+
+            enemyCount++;
+        }
+
+        enemiesSurrounding.Dispose();
+
+        blackboard.enemiesSurrounding = enemyCount;
+    }
+
+    private bool TryGetNewTarget(LocalTransform localTransform, Team team, BlackboardSensorConfigAndState blackboardConfigAndState, ref FSMBlackBoard blackboard, EnabledRefRW<HasTarget> hasTarget)
+    {
+        NativeList<HashedUnit> unitsInRadius = new NativeList<HashedUnit>(64, Allocator.Temp);
+        FillUnitsBuffer(localTransform, blackboardConfigAndState.searchRadiusForTarget, ref unitsInRadius);
+
+        Entity closerEntity = Entity.Null;
+        float closerDistanceSq = float.MaxValue;
+        float searchRadiusSq = blackboardConfigAndState.searchRadiusForTarget * blackboardConfigAndState.searchRadiusForTarget;
+
+        foreach (HashedUnit candidate in unitsInRadius)
+        {
+            if (candidate.team == team.value) continue;
+
+            float candidateDistanceSq = math.distancesq(localTransform.Position, candidate.position);
+
+            if (candidateDistanceSq > searchRadiusSq) continue;
+
+            if (candidateDistanceSq < closerDistanceSq)
+            {
+                closerDistanceSq = candidateDistanceSq;
+                closerEntity = candidate.entity;
+            }
+        }
+
+        unitsInRadius.Dispose();
+
+        if (!ShouldReleaseTarget(localTransform, blackboardConfigAndState, blackboard) && !IsWorthSwitching(localTransform, blackboardConfigAndState, blackboard, closerDistanceSq)) return false;
+
+        blackboard.target = closerEntity;
+        SetHasTargetFlag(closerEntity, hasTarget);
+        return closerEntity != Entity.Null;
+    }
+
+    private void FillUnitsBuffer(LocalTransform localTransform, float radius, ref NativeList<HashedUnit> unitsBuffer)
+    {
+        int2 centralCell = GridSystem.WorldPosToCoords(localTransform.Position, gridConfig);
+        int  cellRadius  = (int)math.ceil(radius / gridConfig.cellSize);
+
+        FixedList4096Bytes<int2> cells = GridSystem.GetSurroundingCells(centralCell, cellRadius, true);
+
+        EntitiesPositionToHashSystem.GetUnitsInCells(unitsPerGridHashMap, cells, ref unitsBuffer);
+    }
+
+    private bool IsWorthSwitching(LocalTransform localTransform, BlackboardSensorConfigAndState blackboardConfigAndState, FSMBlackBoard blackboard, float candidateDistanceSq)
+    {
+        if (!transformLookup.TryGetComponent(blackboard.target, out LocalTransform targetTransform)) return true;
+
+        float targetDistance = math.distance(localTransform.Position, targetTransform.Position);
+
+        return math.sqrt(candidateDistanceSq) < targetDistance - blackboardConfigAndState.distanceDifferenceToSwitchTarget;
+    }
+
+    bool TryResetTimer(ref BlackboardSensorConfigAndState config)
+    {
+        if (config.clock<config.scanInterval)
+        {
+            config.clock+=deltaTime;
+            return false;
+        }
+        else
+        {
+            config.clock = 0;
+            return true;
+        }
+    }
+
+
+    void DecayRetaliationDamage(ref BlackboardSensorConfigAndState config, ref LastAttacker lastAttacker)
+    {
+        lastAttacker.accumulatedDamage = math.max(0f, lastAttacker.accumulatedDamage - config.retaliationDamageDecay * config.scanInterval);
+    }
+
+    bool HasEnoughDamageToRetaliate(BlackboardSensorConfigAndState config, LastAttacker lastAttacker) => lastAttacker.accumulatedDamage >= config.retaliationDamageThreshold;
+
+
 }

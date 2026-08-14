@@ -3,6 +3,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 
+[UpdateAfter(typeof(StateManagerSystem))]
 [UpdateBefore(typeof(MoveToDestinationSystem))]
 public partial struct StateFollowSystem : ISystem
 {

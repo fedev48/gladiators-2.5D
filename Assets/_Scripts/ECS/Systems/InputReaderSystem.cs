@@ -78,7 +78,7 @@ public partial class InputReaderSystem : SystemBase
         if (inputSystem.Player.Attack.WasPressedThisFrame())
         {
             foreach ((RefRO<BulletSpellConfig> _, Entity entity) in
-                SystemAPI.Query<RefRO<BulletSpellConfig>>().WithEntityAccess())
+                SystemAPI.Query<RefRO<BulletSpellConfig>>().WithEntityAccess().WithAll<PlayerTag>())
             {
                 EntityManager.SetComponentData(entity, new FireBulletEvent { direction = lastInputDirection });
                 EntityManager.SetComponentEnabled<FireBulletEvent>(entity, true);

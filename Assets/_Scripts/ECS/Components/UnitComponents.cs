@@ -18,8 +18,8 @@ public struct CurrentVelocity       : IComponentData { public float3 value; }
 public struct KnockbackVelocity     : IComponentData { public float3 Value; public float multiplier; public float durationMultiplier; }//multiplier is aplied in VelocityComposerSystem, giving the weight to the KB. durationMultiplier is applied in KnockbackVelocity that applies the decay (how long it takes for the unit to stop)
 public struct SeparationVelocity    : IComponentData { public float3 value; }
 public struct DesiredVelocity       : IComponentData { public float3 value; }
-public struct MoveDestination       : IComponentData, IEnableableComponent { public float3 value; }
 public struct Health                : IComponentData { public int value; }
+public struct MoveDestination       : IComponentData, IEnableableComponent { public float3 value; }
 public struct NeedsPathfinding      : IComponentData, IEnableableComponent { public float3 destination; }
 public struct UsingPathfinding      : IComponentData, IEnableableComponent { public int flowFieldId; }
 
@@ -34,7 +34,7 @@ public struct DamageAnimation       : IComponentData, IEnableableComponent { pub
 public struct MoveSpeed             : IComponentData { public float  value; }
 public struct MovementConfig        : IComponentData { public float  acceleration; public float maxSpeed; }
 public struct SeparationConfig      : IComponentData { public float  radius; public float strenght; }
-public struct ShouldSnapToFloorTag  : IComponentData, IEnableableComponent {}
+public struct AffectedByGrativy     : IComponentData, IEnableableComponent { public float verticalVelocity; }
 
 //status effects
 public struct MovementBlocked       : IComponentData, IEnableableComponent { public float remainingTime; }
@@ -46,8 +46,32 @@ public struct WanderState           : IFSMState {}
 public struct FollowState           : IFSMState {}
 public struct StunnedState          : IFSMState {}
 public struct FleeState             : IFSMState {}
-public struct MeleeAttackState      : IFSMState {}
-public struct RangeAttack           : IFSMState {}
+public struct RangeAttack : IFSMState
+{
+    public float distanceTolerance;
+    public float straightShotRange;   //used when the bullet has no gravity, since there is no ballistic range to compute
+    public float recovery;
+
+    public float elapsed;
+    public float duration;
+    public float shotTime;
+    public bool  shotFired;
+}
+
+public struct MeleeAttackState : IFSMState
+{
+    public float attackRange;
+    public float stopDistance;
+    public float hitRadius;        //if 0, it hits only the target
+    public float damage;
+    public float knockbackStrength;
+    public float recovery;
+
+    public float elapsed;
+    public float duration;
+    public float hitTime;
+    public bool  hitLanded;
+}
 
 
 public struct FSMBlackBoard         : IComponentData
@@ -59,26 +83,26 @@ public struct FSMBlackBoard         : IComponentData
 
 public struct HasTarget : IComponentData, IEnableableComponent {}
 
-public struct TargetingConfig : IComponentData
+public struct BlackboardSensorConfigAndState : IComponentData
 {
-    public int   searchCellRadius;
-    public float scanInterval;
-    public float retentionMultiplier;   //must be > 1 or the target oscillates
-    public float switchImprovement;    //number > 0 avoids jumping between targets when they're close in distance
-    public float attackerLockDuration;
-}
+    //state
+    public float clock;
 
-public struct TargetingState : IComponentData
-{
-    public float scanCooldown;
-    public float lockRemaining;
+    //config
+    public float searchRadiusForTarget;
+    public float searchRadiusForSurrouded;
+    public float scanInterval;
+    public float distanceTargetReleaseMultiplier;   //must be > 1 or the target oscillates (multiplies the target distance, to get a valua at which release the target)
+    public float distanceDifferenceToSwitchTarget;    //number > 0 avoids jumping between targets when they're close in distance
+    public float retaliationDamageThreshold;   //accumulated damage needed before switching target to the attacker
+    public float retaliationDamageDecay;       //accumulated damage lost per second
 }
 
 //written by whoever deals the damage
-public struct LastAttacker : IComponentData, IEnableableComponent
+public struct LastAttacker : IComponentData
 {
     public Entity entity;
-    public float  damage;
+    public float  accumulatedDamage;
 }
 
 public struct FSMState : IComponentData

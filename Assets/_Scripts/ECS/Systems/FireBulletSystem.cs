@@ -22,17 +22,28 @@ public partial struct FireBulletSystem : ISystem
             .CreateCommandBuffer(state.WorldUnmanaged);
 
         foreach ((RefRO<LocalTransform> transform,
-                  RefRO<FireBulletEvent> orbEvent,
+                  RefRO<FireBulletEvent> fireBulletEvent,
+                  RefRO<BulletSpellConfig> spellConfig,
                   Entity entity) in
-            SystemAPI.Query<RefRO<LocalTransform>, RefRO<FireBulletEvent>>()
+            SystemAPI.Query<RefRO<LocalTransform>, RefRO<FireBulletEvent>, RefRO<BulletSpellConfig>>()
                 .WithEntityAccess())
         {
-            BulletConfig prefabConfig = SystemAPI.GetComponent<BulletConfig>(refs.bulletPrefabEntity);
-            prefabConfig.direction = orbEvent.ValueRO.direction;
+            Entity bulletPrefab = SystemAPI.HasComponent<PlayerTag>(entity)
+                ? refs.bulletPrefabEntity
+                : refs.bulletPrefabEnemyEntity;
+
+            BulletConfig prefabConfig = SystemAPI.GetComponent<BulletConfig>(bulletPrefab);
+
+            float3 direction = fireBulletEvent.ValueRO.direction;
+            float3 aim       = math.normalizesafe(new float3(direction.x, 0f, direction.z));
+            float  angle     = math.radians(spellConfig.ValueRO.fireAngle);
+
+            prefabConfig.velocity = (aim * math.cos(angle) + math.up() * math.sin(angle)) * prefabConfig.speed;
+            prefabConfig.owner    = entity;
 
             float3 spawnPos = transform.ValueRO.Position + new float3(0f, 1f, 0f);
 
-            Entity orb = ecb.Instantiate(refs.bulletPrefabEntity);
+            Entity orb = ecb.Instantiate(bulletPrefab);
             ecb.SetComponent(orb, LocalTransform.FromPosition(spawnPos));
             ecb.SetComponent(orb, prefabConfig);
 

@@ -1,6 +1,7 @@
 using Unity.Burst;
 using Unity.Entities;
 [BurstCompile]
+[UpdateAfter(typeof(StateTransitionSystem))]
 partial struct StateManagerSystem : ISystem
 {
     public void OnUpdate(ref SystemState state)
@@ -43,10 +44,22 @@ partial struct StateManagerSystem : ISystem
 
             entityManager.SetComponentEnabled(entity, ComponentType.ReadWrite(winningState), true);
 
+            CancelOneShot(entityManager, entity);
+
             fSMState.ValueRW.previous      = fSMState.ValueRO.current;
             fSMState.ValueRW.current       = winningState;
             fSMState.ValueRW.timeInState   = 0;
             fSMState.ValueRW.stateDuration = -1;
         }
+    }
+
+    static void CancelOneShot(EntityManager entityManager, Entity entity)
+    {
+        if (!entityManager.HasComponent<VisualEntity>(entity)) return;
+
+        Entity visualEntity = entityManager.GetComponentData<VisualEntity>(entity).value;
+
+        if (entityManager.HasComponent<IsOneShot>(visualEntity))
+            entityManager.SetComponentEnabled<IsOneShot>(visualEntity, false);
     }
 }

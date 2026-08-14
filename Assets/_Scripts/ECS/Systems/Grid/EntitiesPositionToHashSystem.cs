@@ -54,7 +54,7 @@ partial struct EntitiesPositionToHashSystem : ISystem
 
         void Execute(Entity entity, in LocalTransform localTransform, in Team team)
         {
-            int2 entityCellCoords = (int2)math.floor(localTransform.Position.xz / cellSize);
+            int2 entityCellCoords = GridSystem.WorldPosToCoords(localTransform.Position, cellSize);
             hashMapWriter.Add(entityCellCoords, new HashedUnit
             {
                 entity   = entity,
@@ -69,5 +69,19 @@ partial struct EntitiesPositionToHashSystem : ISystem
     {
         UnitSpatialHashComponents spatialHash = state.EntityManager.GetComponentData<UnitSpatialHashComponents>(state.SystemHandle);
         if (spatialHash.hashMap.IsCreated) spatialHash.hashMap.Dispose();
+    }
+
+    //fills units with everything standing in the given cells, so the caller must still filter by distance
+    public static void GetUnitsInCells(in NativeParallelMultiHashMap<int2, HashedUnit> hashMap, in FixedList4096Bytes<int2> cells, ref NativeList<HashedUnit> units)
+    {
+        units.Clear();
+
+        for (int i = 0; i < cells.Length; i++)
+        {
+            if (!hashMap.TryGetFirstValue(cells[i], out HashedUnit unit, out NativeParallelMultiHashMapIterator<int2> iterator)) continue;
+
+            do units.Add(unit);
+            while (hashMap.TryGetNextValue(out unit, ref iterator));
+        }
     }
 }
