@@ -10,6 +10,7 @@ partial struct BlackboardSensorSystem : ISystem
 {
     EntityQuery sensorQuery;
     ComponentLookup<LocalTransform> transformLookup;
+    ComponentLookup<DeathState>     deathStateLookup;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
@@ -21,6 +22,7 @@ partial struct BlackboardSensorSystem : ISystem
             .Build();
 
         transformLookup = state.GetComponentLookup<LocalTransform>(true);
+        deathStateLookup = state.GetComponentLookup<DeathState>   (true);
 
         state.RequireForUpdate(sensorQuery);
         state.RequireForUpdate<GridConfig>();
@@ -34,11 +36,13 @@ partial struct BlackboardSensorSystem : ISystem
         UnitSpatialHashComponents spatialHash = SystemAPI.GetSingleton<UnitSpatialHashComponents>();
 
         transformLookup.Update(ref state);
+        deathStateLookup.Update(ref state);
 
         SenseTargetsJob senseJob = new SenseTargetsJob
         {
             unitsPerGridHashMap = spatialHash.hashMap,
             transformLookup     = transformLookup,
+            deathStateLookup    = deathStateLookup,
             gridConfig          = gridConfig,
             deltaTime           = SystemAPI.Time.DeltaTime
         };
@@ -54,6 +58,7 @@ partial struct SenseTargetsJob : IJobEntity
 
     [ReadOnly] public NativeParallelMultiHashMap<int2, HashedUnit> unitsPerGridHashMap;
     [ReadOnly] public ComponentLookup<LocalTransform> transformLookup;
+    [ReadOnly] public ComponentLookup<DeathState>     deathStateLookup;
     public GridConfig gridConfig;
     public float deltaTime;
 
@@ -65,7 +70,9 @@ partial struct SenseTargetsJob : IJobEntity
         EnabledRefRW<HasTarget> hasTarget,
         ref LastAttacker lastAttacker)
     {
-        if (transformLookup.TryGetComponent(blackboard.target, out LocalTransform transform)) blackboard.targetLocation = transform.Position;
+       
+
+        if (transformLookup.TryGetComponent(blackboard.target, out LocalTransform transform) && !IsTargetDying(blackboard.target)) blackboard.targetLocation = transform.Position;
         else blackboard.target = Entity.Null;
         CountSurroundingUnits(localTransform, team, blackboardConfigAndState, ref blackboard);
 
@@ -87,7 +94,7 @@ partial struct SenseTargetsJob : IJobEntity
     private bool CheckRetaliation(ref BlackboardSensorConfigAndState blackboardConfigAndState, ref FSMBlackBoard blackboard, ref LastAttacker lastAttacker, EnabledRefRW<HasTarget> hasTarget)
     {
         DecayRetaliationDamage(ref blackboardConfigAndState, ref lastAttacker);
-        if (HasEnoughDamageToRetaliate(blackboardConfigAndState, lastAttacker) && transformLookup.HasComponent(lastAttacker.entity))
+        if (HasEnoughDamageToRetaliate(blackboardConfigAndState, lastAttacker) && transformLookup.HasComponent(lastAttacker.entity) && !IsTargetDying(lastAttacker.entity))
         {
             // lastAttacker.accumulatedDamage -= blackboardConfigAndState.retaliationDamageThreshold;
             blackboard.target = lastAttacker.entity;
@@ -109,6 +116,8 @@ partial struct SenseTargetsJob : IJobEntity
                 return false;
             }
         }
+
+
 
         return true;
     }
@@ -144,6 +153,7 @@ partial struct SenseTargetsJob : IJobEntity
         foreach (HashedUnit candidate in unitsInRadius)
         {
             if (candidate.team == team.value) continue;
+            if (IsTargetDying(candidate.entity)) continue;
 
             float candidateDistanceSq = math.distancesq(localTransform.Position, candidate.position);
 
@@ -206,5 +216,6 @@ partial struct SenseTargetsJob : IJobEntity
 
     bool HasEnoughDamageToRetaliate(BlackboardSensorConfigAndState config, LastAttacker lastAttacker) => lastAttacker.accumulatedDamage >= config.retaliationDamageThreshold;
 
+    bool IsTargetDying(Entity entity) => deathStateLookup.HasComponent(entity) && deathStateLookup.IsComponentEnabled(entity);
 
 }

@@ -54,6 +54,9 @@ public partial class InputReaderSystem : SystemBase
 
             // if (GridDebugVisualizer.Instance != null) GridDebugVisualizer.Instance.MarkDirty();
             // Debug.Log($"[FlowfieldTest] entity {testEntity.Index} -> target {randomTarget}");
+            ComponentLookup<IsOneShot>      oneShotLookup = SystemAPI.GetComponentLookup<IsOneShot>(isReadOnly: false);
+            BufferLookup<AnimationClipData> clipsLookup   = SystemAPI.GetBufferLookup<AnimationClipData>(isReadOnly: true);
+
             foreach ((RefRO<SkeletonSpellConfig> spellConfig, RefRO<VisualEntity> visual, Entity entity) in
                 SystemAPI.Query<RefRO<SkeletonSpellConfig>, RefRO<VisualEntity>>().WithEntityAccess())
             {
@@ -62,11 +65,8 @@ public partial class InputReaderSystem : SystemBase
 
                 Entity visualEntity = visual.ValueRO.value;
                 AnimationDirection facing = EntityManager.GetComponentData<AnimRequest>(visualEntity).direction;
-                EntityManager.SetComponentData(visualEntity, new IsOneShot { animation = Animation.Cast, animationDirection = facing });
-                EntityManager.SetComponentEnabled<IsOneShot>(visualEntity, true);
 
-                DynamicBuffer<AnimationClipData> clips = SystemAPI.GetBuffer<AnimationClipData>(visualEntity);
-                if (!AnimationActions.TryGetClip(Animation.Cast, facing, clips, out AnimationClipData castClip)) continue;
+                if (!AnimationActions.TryPlayOneShot(visualEntity, Animation.Cast, facing, ref clipsLookup, ref oneShotLookup, out AnimationClipData castClip)) continue;
 
                 float castDuration  = castClip.frameCount / castClip.fps;
                 float remainingTime = EntityManager.GetComponentData<MovementBlocked>(entity).remainingTime;

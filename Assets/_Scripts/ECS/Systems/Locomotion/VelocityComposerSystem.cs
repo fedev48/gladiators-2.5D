@@ -25,8 +25,8 @@ partial struct VelocityComposerSystem : ISystem
                         .WithPresent<MovementBlocked>())
         {
             float3 desired = movementBlocked.ValueRO ? float3.zero : desiredVelocity.ValueRO.value;
+            float3 knockback = movementBlocked.ValueRO ? float3.zero : knockbackVelocity.ValueRO.Value * knockbackVelocity.ValueRO.multiplier;
 
-            float3 knockback = knockbackVelocity.ValueRO.Value * knockbackVelocity.ValueRO.multiplier;
             if (math.lengthsq(knockback) > 0.01f)
             {
                 currentVelocity.ValueRW.value = knockback + separationVelocity.ValueRO.value;

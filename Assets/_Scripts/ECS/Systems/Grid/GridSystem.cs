@@ -1,3 +1,4 @@
+using System.Numerics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -14,7 +15,6 @@ partial struct GridSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         wallLayerMask = (uint)(1 << UnityEngine.LayerMask.NameToLayer("Walls"));
-        state.EntityManager.AddComponent<CellComponentsForCorpseCount>(state.SystemHandle);//creates a buffer bcause CellComponentsForCorpseCount is IBufferElementData
         state.RequireForUpdate<GridConfig>();
 
     }
@@ -22,7 +22,6 @@ partial struct GridSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         EntityCommandBuffer entityCommandBuffer = new EntityCommandBuffer(Allocator.Temp);
-        DynamicBuffer<CellComponentsForCorpseCount> bufferCorpses = state.EntityManager.GetBuffer<CellComponentsForCorpseCount>(state.SystemHandle);
         PhysicsWorldSingleton physicsWorldSingleton = SystemAPI.GetSingleton<PhysicsWorldSingleton>();
         CollisionWorld collisionWorld = physicsWorldSingleton.CollisionWorld;
         foreach ((RefRO<GridConfig> config, Entity entity) in
@@ -39,8 +38,6 @@ partial struct GridSystem : ISystem
 
             var buffer = entityCommandBuffer.AddBuffer<CellComponents>(gridEntity);
         
-
-             
             for (int y = 0; y < config.ValueRO.height; y++)
             {
                 for (int x = 0; x < config.ValueRO.width; x++)
@@ -57,9 +54,6 @@ partial struct GridSystem : ISystem
                         cost = cost,
                         bestCost = -1,
                     });
-
-                    bufferCorpses.Add(new CellComponentsForCorpseCount {currentBuriedBodies = 3});
-
                 }
             }
 
@@ -69,11 +63,6 @@ partial struct GridSystem : ISystem
         entityCommandBuffer.Dispose();
     }
 
-    [BurstCompile]
-    public void OnDestroy(ref SystemState state)
-    {
-        
-    }
     public static bool IsOnWall(float3 position, CollisionWorld collisionWorld, uint wallLayerMask,  float size = 0)
     {
         float3 centeredPosition;
@@ -206,6 +195,7 @@ partial struct GridSystem : ISystem
 
         return false;
     }
+
 }
 
 

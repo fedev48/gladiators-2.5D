@@ -7,11 +7,13 @@ using Unity.Transforms;
 partial struct StateTransitionSystem : ISystem
 {
     ComponentLookup<PhysicsCollider> colliderLookup;
+    TypeIndex anyStateIndex;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         colliderLookup = state.GetComponentLookup<PhysicsCollider>(isReadOnly: true);
+        anyStateIndex  = TypeManager.GetTypeIndex<AnyState>();
         state.RequireForUpdate<PhysicsWorldSingleton>();
     }
 
@@ -40,7 +42,7 @@ partial struct StateTransitionSystem : ISystem
         {
             foreach (StateTransition transition in transitions)
             {
-                if (transition.fromState != fSMState.ValueRO.current) continue;
+                if (transition.fromState != anyStateIndex && transition.fromState != fSMState.ValueRO.current) continue;
 
                 if (!CheckConditions(transition,
                                      fSMState.ValueRO,
@@ -69,13 +71,13 @@ partial struct StateTransitionSystem : ISystem
     {
         StateCondition conditions = transition.conditions;
 
-        if (Has(conditions, StateCondition.StateFinished)      && !StateFinished(fSMState))                                                    return false;
-        if (Has(conditions, StateCondition.HasTarget)          && !HasTarget(fSMBlackBoard))                                                   return false;
-        if (Has(conditions, StateCondition.NoTarget)           && !NoTarget(fSMBlackBoard))                                                    return false;
-        if (Has(conditions, StateCondition.TargetInRange)      && !TargetInRange(fSMBlackBoard, selfPosition, transition.rangeThreshold))      return false;
-        if (Has(conditions, StateCondition.TargetOutOfRange)   && !TargetOutOfRange(fSMBlackBoard, selfPosition, transition.rangeThreshold))   return false;
-        if (Has(conditions, StateCondition.HealthBelow)        && !HealthBelow(health, transition.healthThreshold))                            return false;
-        if (Has(conditions, StateCondition.EnemiesAroundAbove) && !EnemiesAroundAbove(fSMBlackBoard, transition.enemiesThreshold))             return false;
+        if (Has(conditions, StateCondition.StateFinished)      && !StateFinished(fSMState))                                                          return false;
+        if (Has(conditions, StateCondition.HasTarget)          && !HasTarget(fSMBlackBoard))                                                         return false;
+        if (Has(conditions, StateCondition.NoTarget)           && !NoTarget(fSMBlackBoard))                                                          return false;
+        if (Has(conditions, StateCondition.TargetInRange)      && !TargetInRange(fSMBlackBoard, selfPosition, transition.rangeThreshold))            return false;
+        if (Has(conditions, StateCondition.TargetOutOfRange)   && !TargetOutOfRange(fSMBlackBoard, selfPosition, transition.rangeThreshold))         return false;
+        if (Has(conditions, StateCondition.HealthBelow)        && !HealthBelow(health, transition.healthThreshold))                                  return false;
+        if (Has(conditions, StateCondition.EnemiesAroundAbove) && !EnemiesAroundAbove(fSMBlackBoard, transition.enemiesThreshold))                   return false;
         if (Has(conditions, StateCondition.TargetVisible)      && !TargetVisible(fSMBlackBoard, selfPosition, self, collisionWorld, colliderLookup)) return false;
 
         return true;

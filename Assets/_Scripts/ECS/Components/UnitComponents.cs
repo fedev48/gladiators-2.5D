@@ -35,6 +35,7 @@ public struct MoveSpeed             : IComponentData { public float  value; }
 public struct MovementConfig        : IComponentData { public float  acceleration; public float maxSpeed; }
 public struct SeparationConfig      : IComponentData { public float  radius; public float strenght; }
 public struct AffectedByGrativy     : IComponentData, IEnableableComponent { public float verticalVelocity; }
+public struct LeavesCorpseInCellTag : IComponentData, IEnableableComponent {}
 
 //status effects
 public struct MovementBlocked       : IComponentData, IEnableableComponent { public float remainingTime; }
@@ -46,12 +47,20 @@ public struct WanderState           : IFSMState {}
 public struct FollowState           : IFSMState {}
 public struct StunnedState          : IFSMState {}
 public struct FleeState             : IFSMState {}
+public struct AnyState              : IFSMState {}
+public struct DeathState             : IFSMState
+{
+    //animation
+    public float elapsed;
+    public float duration;
+}
 public struct RangeAttack : IFSMState
 {
     public float distanceTolerance;
     public float straightShotRange;   //used when the bullet has no gravity, since there is no ballistic range to compute
     public float recovery;
 
+    //animation
     public float elapsed;
     public float duration;
     public float shotTime;
@@ -67,6 +76,7 @@ public struct MeleeAttackState : IFSMState
     public float knockbackStrength;
     public float recovery;
 
+    //animation
     public float elapsed;
     public float duration;
     public float hitTime;

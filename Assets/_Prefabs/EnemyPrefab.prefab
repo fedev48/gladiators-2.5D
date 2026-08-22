@@ -438,6 +438,89 @@ MonoBehaviour:
     isOverride: 1
     overrideTo: 12
     flip: 1
+  - animation: 6
+    animationDirection: 1
+    frames:
+    - {fileID: 854476701, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 877454752, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1203279832, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -425711616, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -289270408, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1554995236, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -446934429, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1194339604, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1918042075, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 257418752, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -921017956, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1483036273, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: 2030471772, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -871437811, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    - {fileID: -1840161428, guid: 72b12db8176c94d83ab7e40870783a6f, type: 3}
+    fps: 16
+    hitFrame: -1
+    isOverride: 0
+    overrideTo: 12
+    flip: 1
+  - animation: 6
+    animationDirection: 2
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    hitFrame: -1
+    isOverride: 1
+    overrideTo: 16
+    flip: 1
+  - animation: 6
+    animationDirection: 0
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 0
+    hitFrame: -1
+    isOverride: 1
+    overrideTo: 16
+    flip: 0
+  - animation: 6
+    animationDirection: 3
+    frames:
+    - {fileID: -1435907686, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -18496469, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 858833557, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 800375094, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1826086585, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -956935381, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 501726620, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -843669542, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 1218605423, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: 730115607, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -1749038430, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    - {fileID: -32828992, guid: 82ef41c48d36548508aee9177984ca4a, type: 3}
+    fps: 16
+    hitFrame: -1
+    isOverride: 1
+    overrideTo: 16
+    flip: 1
   initialAnimation: 1
   currentAnimation: 0
   flipPivotOffset: {x: -0.00031, y: 0}
@@ -559,14 +642,15 @@ MonoBehaviour:
   separationSpeed: 15
   knockbackMultiplier: 1
   knockbackDurationMultiplier: 1
-  health: 10
-  targetSearchRadius: 10
+  health: 1
+  leavesCorpseInCell: 1
+  targetSearchRadius: 20
   targetSearchRadiuosForSurrounded: 2
   targetScanInterval: 0.5
   targetRetentionMultiplier: 1.8
   targetSwitchImprovement: 1
-  attackerLockDuration: 10
-  attackerDamageThreshold: 5
+  attackerLockDuration: 3
+  attackerDamageThreshold: 10
   attackerDamageDecay: 2
   attackRange: 2.5
   attackHitRadius: 3
@@ -612,4 +696,18 @@ MonoBehaviour:
     rangeThreshold: 0
     healthThreshold: 0
     enemiesThreshold: 2
+    priority: 1
+  - fromState: AnyState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    toState: DeathState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    conditions: 32
+    rangeThreshold: 0
+    healthThreshold: 1
+    enemiesThreshold: 0
+    priority: 255
+  - fromState: AnyState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    toState: WanderState, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    conditions: 4
+    rangeThreshold: 0
+    healthThreshold: 0
+    enemiesThreshold: 0
     priority: 1

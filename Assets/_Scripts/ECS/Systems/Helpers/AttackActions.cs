@@ -37,6 +37,7 @@ public static class AttackActions
         ref ComponentLookup<LastAttacker> lastAttackerLookup)
     {
         if (!healthLookup.HasComponent(target)) return;
+        if (healthLookup[target].value <= 0) return;
 
         if (damageLookup.HasComponent(target))
         {

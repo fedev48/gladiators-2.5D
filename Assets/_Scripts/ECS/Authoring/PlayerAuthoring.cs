@@ -54,10 +54,13 @@ public class PlayerAuthoring : MonoBehaviour
             
             //Movement components
             AddComponent(entity, new CurrentVelocity {});
+
             AddComponent(entity, new DesiredVelocity {});
             AddComponent(entity, new SeparationVelocity {});
             AddComponent(entity, new MovementBlocked());
+            AddComponent(entity, new DeathState {});
             SetComponentEnabled<MovementBlocked>(entity, false);
+            SetComponentEnabled<DeathState>(entity, false);
             AddComponent(entity, new RecievingDamage());
             SetComponentEnabled<RecievingDamage>(entity, false);
 

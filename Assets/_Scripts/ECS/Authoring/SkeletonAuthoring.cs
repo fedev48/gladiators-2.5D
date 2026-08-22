@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class SkeletonAuthoring : MonoBehaviour
 {
+    [Header("Unit Config")]
     public float accelerationMin = 2f;
     public float accelerationMax = 8f;
     public float maxSpeed        = 4f;
@@ -14,7 +15,7 @@ public class SkeletonAuthoring : MonoBehaviour
     public float knockbackDurationMultiplier = 1f;
     public int   health = 10;
 
-    [Header("Targeting")]
+    [Header("BlackBoard Filling")]
     public int   targetSearchRadius                 = 5;
     public int   targetSearchRadiuosForSurrounded   = 5;
     public float targetScanInterval                 = 0.5f;
@@ -24,7 +25,7 @@ public class SkeletonAuthoring : MonoBehaviour
     public float attackerDamageThreshold            = 5f;
     public float attackerDamageDecay                = 2f;
 
-    [Header("Melee attack")]
+    [Header("Melee Attack")]
     public float attackRange       = 1.5f;
     public float attackHitRadius   = 1f;
     public float attackDamage      = 3f;
@@ -87,8 +88,6 @@ public class SkeletonAuthoring : MonoBehaviour
             SetComponentEnabled<UsingPathfinding> (entity, false);
 
             //state machine tags
-            AddComponent(entity, new SpawnState());
-            AddComponent(entity, new FollowState());
             AddComponent(entity, new MeleeAttackState
             {
                 attackRange         = authoring.attackRange,
@@ -98,8 +97,16 @@ public class SkeletonAuthoring : MonoBehaviour
                 knockbackStrength   = authoring.attackKnockback,
                 recovery            = authoring.attackRecovery,
             });
+            
+            AddComponent(entity, new SpawnState());
+            AddComponent(entity, new FollowState());
+            AddComponent(entity, new DeathState
+            {
+                elapsed = -1
+            });
             SetComponentEnabled<FollowState> (entity, false);
             SetComponentEnabled<MeleeAttackState> (entity, false);
+            SetComponentEnabled<DeathState> (entity, false);
             SetComponentEnabled<SpawnState>  (entity, true);
 
             AddComponent(entity, new FSMState { current = TypeManager.GetTypeIndex<SpawnState>(), stateDuration = -1 });

@@ -9,10 +9,6 @@ public struct CellComponents : IBufferElementData
     public float2 movingVector;
     
 }
-public struct CellComponentsForCorpseCount : IBufferElementData
-{
-    public int currentBuriedBodies;
-}
 
 
 

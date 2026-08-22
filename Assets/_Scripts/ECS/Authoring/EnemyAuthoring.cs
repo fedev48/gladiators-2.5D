@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class EnemyAuthoring : MonoBehaviour
 {
+    [Header("Unit Config")]
     public float acceleration = 4f;
     public float maxSpeed     = 3f;
     public float separationRadius = 1f;
@@ -12,8 +13,9 @@ public class EnemyAuthoring : MonoBehaviour
     public float knockbackMultiplier = 1f;
     public float knockbackDurationMultiplier = 1f;
     public int   health = 10;
+    public bool leavesCorpseInCell = false;
 
-    [Header("Targeting")]
+    [Header("BlackboardFilling")]
     public int   targetSearchRadius                 = 5;
     public int   targetSearchRadiuosForSurrounded   = 5;
     public float targetScanInterval                 = 0.5f;
@@ -23,14 +25,14 @@ public class EnemyAuthoring : MonoBehaviour
     public float attackerDamageThreshold            = 5f;
     public float attackerDamageDecay                = 2f;
 
-    [Header("Melee attack")]
+    [Header("Melee Attack")]
     public float attackRange       = 1.5f;
     public float attackHitRadius   = 1f;
     public float attackDamage      = 3f;
     public float attackKnockback   = 20f;
     public float attackRecovery    = 0.5f;
 
-    [Header("Range attack")]
+    [Header("Range Attack")]
     public float bulletFireAngle       = 45f;
     public float rangeAttackRecovery   = 5f;
     public float rangeDistanceTolerance = 1f;
@@ -43,33 +45,38 @@ public class EnemyAuthoring : MonoBehaviour
 
         public override void Bake(EnemyAuthoring authoring)
         {
+            //unit config
             Entity entity = GetEntity(TransformUsageFlags.Dynamic);
 
             AddComponent(entity, new Team { value = Teams.ENEMY });
             AddComponent(entity, new UnitTag());
-            AddComponent(entity, new MovementBlocked());
-            SetComponentEnabled<MovementBlocked>(entity, false);
-            AddComponent(entity, new Health { value = authoring.health });
-            AddComponent(entity, new RecievingDamage());
-            SetComponentEnabled<RecievingDamage>(entity, false);
-            AddComponent(entity, new CurrentVelocity {});
-            AddComponent(entity, new DesiredVelocity {});
+            AddComponent(entity, new LeavesCorpseInCellTag {});
+            SetComponentEnabled<LeavesCorpseInCellTag> (entity, authoring.leavesCorpseInCell);
             AddComponent(entity, new KnockbackVelocity
             {
                 multiplier      = authoring.knockbackMultiplier,
                 durationMultiplier = authoring.knockbackDurationMultiplier
             });
-            AddComponent(entity, new MoveSpeed {});
+            AddComponent(entity, new Health { value = authoring.health });
             AddComponent(entity, new MovementConfig
             {
                 acceleration = authoring.acceleration,
                 maxSpeed     = authoring.maxSpeed
             });
+            AddComponent(entity, new AffectedByGrativy());
+            AddComponent(entity, new PhysicsGravityFactor { Value = 0f });
+            //state
+            AddComponent(entity, new MovementBlocked());
+            SetComponentEnabled<MovementBlocked>(entity, false);
+            AddComponent(entity, new RecievingDamage());
+            SetComponentEnabled<RecievingDamage>(entity, false);
+            AddComponent(entity, new CurrentVelocity {});
+            AddComponent(entity, new DesiredVelocity {});
+            AddComponent(entity, new MoveSpeed {});
+           
             AddComponent(entity, new MoveDestination());
             SetComponentEnabled<MoveDestination>(entity, false);
 
-            AddComponent(entity, new AffectedByGrativy());
-            AddComponent(entity, new PhysicsGravityFactor { Value = 0f });
 
             //animation system
             Entity visualEntity = GetEntity(authoring.GetComponentInChildren<SpriteAnimatorAuthoring>(), TransformUsageFlags.Dynamic);
@@ -109,9 +116,14 @@ public class EnemyAuthoring : MonoBehaviour
             SetComponentEnabled<FireBulletEvent>(entity, false);
 
             AddComponent(entity, new WanderState());
+            AddComponent(entity, new DeathState
+            {
+                elapsed = -1
+            });
             SetComponentEnabled<MeleeAttackState>(entity, false);
-            SetComponentEnabled<RangeAttack>(entity, false);
-            SetComponentEnabled<WanderState>(entity, true);
+            SetComponentEnabled<RangeAttack>     (entity, false);
+            SetComponentEnabled<DeathState>       (entity, false);
+            SetComponentEnabled<WanderState>     (entity, true);
 
             AddComponent(entity, new FSMState { current = TypeManager.GetTypeIndex<WanderState>(), stateDuration = -1 });
             AddComponent(entity, new FSMBlackBoard());

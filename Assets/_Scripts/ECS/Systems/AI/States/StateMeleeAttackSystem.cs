@@ -104,7 +104,7 @@ partial struct StateMeleeAttackSystem : ISystem
 
             if (!isAttacking) //sets the start of the attack
             {
-                ResetAnimationValues(meleeAttackState, fSMState, toTarget, visual);
+                SetAnimationValues(meleeAttackState, fSMState, toTarget, visual);
                 continue;
             }
 
@@ -143,12 +143,14 @@ partial struct StateMeleeAttackSystem : ISystem
         hits.Dispose();
     }
 
-    private void ResetAnimationValues(RefRW<MeleeAttackState> meleeAttackState, RefRW<FSMState> fSMState, float3 toTarget, Entity visual)
+    private void SetAnimationValues(RefRW<MeleeAttackState> meleeAttackState, RefRW<FSMState> fSMState, float3 toTarget, Entity visual)
     {
         float duration = 0f;
         float hitTime = 0f;
 
-        if (TryReproducingAttackAnimation(visual, toTarget, out AnimationClipData clip))
+        AnimationDirection direction = AnimationActions.ResolveDirection(visual, toTarget, ref cameraLookup);
+
+        if (AnimationActions.TryPlayOneShot(visual, Animation.Attack, direction, ref clipsLookup, ref oneShotLookup, out AnimationClipData clip))
         {
             duration = clip.frameCount / clip.fps;
             hitTime = math.min(clip.hitFrame / clip.fps, duration);
@@ -190,41 +192,10 @@ partial struct StateMeleeAttackSystem : ISystem
         }
     }
 
-
-    bool TryReproducingAttackAnimation(Entity visualEntity, float3 toTarget, out AnimationClipData clip)
-    {
-        clip = default;
-
-        if (!clipsLookup.HasBuffer(visualEntity) || !oneShotLookup.HasComponent(visualEntity)) return false;
-
-        quaternion invRotation    = quaternion.identity;
-        bool       fourDirections = true;
-
-        if (cameraLookup.HasComponent(visualEntity))
-        {
-            CameraFacingData facingData = cameraLookup[visualEntity];
-            invRotation    = facingData.invRotation;
-            fourDirections = facingData.fourDirections;
-        }
-
-        AnimationDirection direction = AnimationActions.FacingDirection(math.mul(invRotation, toTarget), fourDirections);
-
-        if (!AnimationActions.TryGetClip(Animation.Attack, direction, clipsLookup[visualEntity], out clip)) return false;
-        if (clip.fps <= 0f) return false;
-
-        oneShotLookup[visualEntity] = new IsOneShot { animation = Animation.Attack, animationDirection = direction };
-        oneShotLookup.SetComponentEnabled(visualEntity, true);
-
-        return true;
-    }
-
     bool IsTargetInReach(float3 toTarget, float hitDistance)
     {
         if (math.lengthsq(toTarget) > hitDistance * hitDistance) return false;
 
         return true;
     }
-
-   
-
 }

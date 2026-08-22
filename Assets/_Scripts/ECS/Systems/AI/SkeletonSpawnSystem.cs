@@ -7,6 +7,12 @@ using UnityEngine;
 [UpdateAfter(typeof(InputReaderSystem))]
 public partial struct SkeletonSpawnSystem : ISystem
 {
+    struct CorpseCandidate
+    {
+        public Entity entity;
+        public float3 position;
+    }
+
     private Unity.Mathematics.Random random;
     private int groundMask;
     private uint wallLayerMask;
@@ -15,9 +21,6 @@ public partial struct SkeletonSpawnSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<EntitiesReferences>();
-        state.RequireForUpdate<GridConfig>();
-        state.RequireForUpdate<CellComponentsForCorpseCount>();
-        state.RequireForUpdate<GridBlueprintTag>();
         state.RequireForUpdate<Unity.Physics.PhysicsWorldSingleton>();
         random = Unity.Mathematics.Random.CreateFromIndex(1234);
         groundMask = LayerMask.GetMask("Ground");
@@ -30,11 +33,9 @@ public partial struct SkeletonSpawnSystem : ISystem
         float prefabScale = SystemAPI.GetComponent<LocalTransform>(refs.skeletonPrefabEntity).Scale;
 
         Unity.Physics.Aabb prefabAabb = SystemAPI.GetComponent<Unity.Physics.PhysicsCollider>(refs.skeletonPrefabEntity).Value.Value.CalculateAabb(RigidTransform.identity);
-        float skeletonHeight = prefabAabb.Max.y - prefabAabb.Min.y;
-        GridConfig config = SystemAPI.GetSingleton<GridConfig>();
-        Entity blueprintEntity = SystemAPI.GetSingletonEntity<GridBlueprintTag>();
-        DynamicBuffer<CellComponents> cells = SystemAPI.GetBuffer<CellComponents>(blueprintEntity);
-        DynamicBuffer<CellComponentsForCorpseCount> corpses = SystemAPI.GetSingletonBuffer<CellComponentsForCorpseCount>();
+        float boundsMinY = prefabAabb.Min.y * prefabScale;
+        float boundsMaxY = prefabAabb.Max.y * prefabScale;
+        float skeletonHeight = boundsMaxY - boundsMinY;
         Unity.Physics.CollisionWorld collisionWorld = SystemAPI.GetSingleton<Unity.Physics.PhysicsWorldSingleton>().CollisionWorld;
         float3 sightOffset = new float3(0f, SIGHT_HEIGHT_OFFSET, 0f);
 
@@ -55,59 +56,56 @@ public partial struct SkeletonSpawnSystem : ISystem
             MovementConfig prefabMovement = SystemAPI.GetComponent<MovementConfig>(refs.skeletonPrefabEntity);
             int count = math.max(1, summonEvent.ValueRO.count);
 
-            
-            int2 playerCell = GridSystem.WorldPosToCoords(playerPos, config);
-            int cellRadius = (int)math.ceil(spellConfig.ValueRO.maxRadius / config.cellSize);
-            FixedList4096Bytes<int2> surroundingCells = GridSystem.GetSurroundingCells(playerCell, cellRadius, roundedCorners: true);
+            float maxRadiusSq = spellConfig.ValueRO.maxRadius * spellConfig.ValueRO.maxRadius;
 
-            NativeList<int> cellsWithCorpses = new(Allocator.Temp);
+            NativeList<CorpseCandidate> corpseCandidates = new(Allocator.Temp);
 
-            foreach (int2 coords in surroundingCells)
+            foreach ((RefRO<LocalTransform> corpseTransform, Entity corpseEntity) in
+                SystemAPI.Query<RefRO<LocalTransform>>()
+                    .WithAll<CorpseTag>()
+                    .WithEntityAccess())
             {
-                if (!GridSystem.CheckIfCoordsIsInBounds(coords, config)) continue;
+                float3 corpsePos = corpseTransform.ValueRO.Position;
+                if (math.distancesq(corpsePos, playerPos) > maxRadiusSq) continue;
 
-                int cellIndex = GridSystem.CoordsToIndex(coords.x, coords.y, config);
-                if (cells[cellIndex].cost == GridSystem.WALL_COST) continue;
-                if (corpses[cellIndex].currentBuriedBodies <= 0) continue;
-
-                cellsWithCorpses.Add(cellIndex);
+                corpseCandidates.Add(new CorpseCandidate { entity = corpseEntity, position = corpsePos });
             }
 
-            for (int i = 0; i < count && cellsWithCorpses.Length > 0; i++)
+            for (int i = 0; i < count && corpseCandidates.Length > 0; i++)
             {
-                int pick = random.NextInt(0, cellsWithCorpses.Length);
-                int cellIndex = cellsWithCorpses[pick];
+                int pick = random.NextInt(0, corpseCandidates.Length);
+                CorpseCandidate corpse = corpseCandidates[pick];
+                corpseCandidates.RemoveAtSwapBack(pick);
 
-                float3 cellOrigin = GridSystem.FlatIndexToWorldPosition(cellIndex, config);
-                float2 pointInCell = random.NextFloat2(float2.zero, new float2(config.cellSize, config.cellSize));
-                float3 candidate = new float3(cellOrigin.x + pointInCell.x, playerPos.y, cellOrigin.z + pointInCell.y);
-
-                bool reachable = TryGetGroundPosition(candidate, groundMask, out float3 spawnPos)
+                bool reachable = TryGetGroundPosition(corpse.position, groundMask, out float3 spawnPos)
                     && GridSystem.HasLineOfSight(playerPos + sightOffset, spawnPos + sightOffset, collisionWorld, wallLayerMask);
 
                 if (!reachable)
                 {
-                    cellsWithCorpses.RemoveAtSwapBack(pick);
                     i--;
                     continue;
                 }
 
-                corpses.ElementAt(cellIndex).currentBuriedBodies--;
-                if (corpses[cellIndex].currentBuriedBodies <= 0) cellsWithCorpses.RemoveAtSwapBack(pick); 
+                Entity despawnRequest = ecb.CreateEntity();
+                ecb.AddComponent(despawnRequest, new CorpseDespawRequest { corpseEntity = corpse.entity });
 
                 float acceleration = random.NextFloat(prefabConfig.accelerationMin, prefabConfig.accelerationMax);
 
+                //standing: bottom of the collider on the ground. buried: top of the collider at ground level
+                float3 surfacePos = new float3(spawnPos.x, spawnPos.y - boundsMinY, spawnPos.z);
+                float3 startPos   = new float3(spawnPos.x, spawnPos.y - boundsMaxY, spawnPos.z);
+
                 Entity skeleton = ecb.Instantiate(refs.skeletonPrefabEntity);
-                ecb.SetComponent(skeleton, LocalTransform.FromPositionRotationScale(spawnPos - new float3(0f, skeletonHeight, 0f), quaternion.identity, prefabScale));
+                ecb.SetComponent(skeleton, LocalTransform.FromPositionRotationScale(startPos, quaternion.identity, prefabScale));
                 ecb.SetComponent(skeleton, new MovementConfig
                 {
                     acceleration = acceleration,
                     maxSpeed     = prefabMovement.maxSpeed
                 });
-                ecb.AddComponent(skeleton, new SkeletonSpawnData { surfacePos = spawnPos, height = skeletonHeight });
+                ecb.AddComponent(skeleton, new SkeletonSpawnData { surfacePos = surfacePos, height = skeletonHeight });
             }
 
-            cellsWithCorpses.Dispose();
+            corpseCandidates.Dispose();
             state.EntityManager.SetComponentEnabled<SummonSkeletonEvent>(entity, false);
         }
     }

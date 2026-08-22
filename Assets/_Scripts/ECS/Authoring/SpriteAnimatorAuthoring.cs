@@ -149,7 +149,8 @@ public enum Animation
     Walk,
     Attack,
     Cast,
-    Emerge
+    Emerge,
+    Death
 }
 public enum AnimationDirection : byte
 {

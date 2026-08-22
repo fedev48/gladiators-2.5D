@@ -47,6 +47,7 @@ partial struct EntitiesPositionToHashSystem : ISystem
 
     [BurstCompile]
     [WithAll(typeof(UnitTag))]
+    [WithNone(typeof(DeathState))]
     partial struct PopulateUnitsHashMapJob : IJobEntity
     {
         public NativeParallelMultiHashMap<int2, HashedUnit>.ParallelWriter hashMapWriter;

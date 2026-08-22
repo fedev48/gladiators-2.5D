@@ -1,20 +1,23 @@
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
 
-[UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
-// [UpdateAfter(typeof(PhysicsSimulationGroup))]
+[UpdateInGroup(typeof(PhysicsSystemGroup))]
+[UpdateAfter(typeof(PhysicsSimulationGroup))]
 [BurstCompile]
 public partial struct BulletDestroySystem : ISystem
 {
     private ComponentLookup<BulletConfig> bulletLookup;
 
+    [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         bulletLookup = state.GetComponentLookup<BulletConfig>(isReadOnly: true);
     }
 
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         float dt = SystemAPI.Time.DeltaTime;
@@ -33,20 +36,31 @@ public partial struct BulletDestroySystem : ISystem
 
         bulletLookup.Update(ref state);
 
-        var simulation = SystemAPI.GetSingleton<SimulationSingleton>();
-
-        foreach (TriggerEvent triggerEvent in simulation.AsSimulation().TriggerEvents)
+        state.Dependency = new BulletTriggerJob
         {
-            TryDestroy(triggerEvent.EntityA, triggerEvent.EntityB, ecb);
-            TryDestroy(triggerEvent.EntityB, triggerEvent.EntityA, ecb);
-        }
+            bulletLookup = bulletLookup,
+            ecb          = ecb
+        }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), state.Dependency);
     }
 
-    void TryDestroy(Entity bullet, Entity other, EntityCommandBuffer ecb)
+    [BurstCompile]
+    private struct BulletTriggerJob : ITriggerEventsJob
     {
-        if (!bulletLookup.HasComponent(bullet)) return;
-        if (bulletLookup[bullet].owner == other) return;
+        [ReadOnly] public ComponentLookup<BulletConfig> bulletLookup;
+        public EntityCommandBuffer ecb;
 
-        ecb.SetComponentEnabled<BulletDestroyTag>(bullet, true);
+        public void Execute(TriggerEvent triggerEvent)
+        {
+            TryDestroy(triggerEvent.EntityA, triggerEvent.EntityB);
+            TryDestroy(triggerEvent.EntityB, triggerEvent.EntityA);
+        }
+
+        void TryDestroy(Entity bullet, Entity other)
+        {
+            if (!bulletLookup.HasComponent(bullet)) return;
+            if (bulletLookup[bullet].owner == other) return;
+
+            ecb.SetComponentEnabled<BulletDestroyTag>(bullet, true);
+        }
     }
 }
