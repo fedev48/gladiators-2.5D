@@ -10,7 +10,12 @@ partial struct StateManagerSystem : ISystem
         float deltaTime = SystemAPI.Time.DeltaTime;
 
         foreach (RefRW<FSMState> fSMState in SystemAPI.Query<RefRW<FSMState>>())
+        {
+            if (fSMState.ValueRO.current == TypeIndex.Null && fSMState.ValueRO.initialState != 0)
+                fSMState.ValueRW.current = TypeManager.GetTypeIndexFromStableTypeHash(fSMState.ValueRO.initialState);
+
             fSMState.ValueRW.timeInState += deltaTime;
+        }
 
         foreach ((
             DynamicBuffer<ChangeStateRequest> requests,

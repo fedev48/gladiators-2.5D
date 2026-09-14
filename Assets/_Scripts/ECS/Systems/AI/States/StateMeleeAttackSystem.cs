@@ -173,7 +173,7 @@ partial struct StateMeleeAttackSystem : ISystem
         in CollisionWorld collisionWorld,
         ref NativeList<DistanceHit> hits)
     {
-        AttackActions.QueryHits(collisionWorld, attackerPosition, attack.hitRadius, CollisionFilter.Default, attacker, ref hits);
+        AttackActions.CreateAndQueryCircleCollider(collisionWorld, attackerPosition, attack.hitRadius, CollisionFilter.Default, attacker, ref hits);
 
         foreach (DistanceHit hit in hits)
         {

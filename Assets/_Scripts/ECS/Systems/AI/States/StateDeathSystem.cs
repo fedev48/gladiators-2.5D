@@ -1,6 +1,7 @@
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
 using Unity.Transforms;
 
 [BurstCompile]
@@ -40,7 +41,6 @@ partial struct StateDeathSystem : ISystem
             RefRO<LocalTransform> localTransform,
             RefRO<VisualEntity> visualEntity,
             EnabledRefRW<MoveDestination> moveEnabled,
-            EnabledRefRW<MovementBlocked> movementBlocked,
             Entity entity)
         in SystemAPI.Query<
                 RefRW<DeathState>,
@@ -48,8 +48,7 @@ partial struct StateDeathSystem : ISystem
                 RefRW<MovementBlocked>,
                 RefRO<LocalTransform>,
                 RefRO<VisualEntity>,
-                EnabledRefRW<MoveDestination>,
-                EnabledRefRW<MovementBlocked>>()
+                EnabledRefRW<MoveDestination>>()
                 .WithPresent<MoveDestination>()
                 .WithPresent<MovementBlocked>()
                 .WithEntityAccess())
@@ -62,8 +61,9 @@ partial struct StateDeathSystem : ISystem
                 
                 SetAnimationStart(deadState, fSMState, visualEntity.ValueRO.value, out animationDuration);
 
-                movementBlocked.ValueRW = true;
+                SystemAPI.SetComponentEnabled<MovementBlocked>(entity, true);
                 movementBlockedData.ValueRW.remainingTime = animationDuration;
+                ecb.RemoveComponent<PhysicsCollider>(entity);
             }
 
             deadState.ValueRW.elapsed += deltaTime;

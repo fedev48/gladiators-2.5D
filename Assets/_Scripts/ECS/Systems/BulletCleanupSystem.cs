@@ -55,7 +55,7 @@ public partial struct BulletCleanupSystem : ISystem
 
     void Explode(float3 center, Entity owner, in CollisionWorld collisionWorld, ref NativeList<DistanceHit> hits)
     {
-        AttackActions.QueryHits(collisionWorld, center, EXPLOSION_RADIUS, CollisionFilter.Default, owner, ref hits);
+        AttackActions.CreateAndQueryCircleCollider(collisionWorld, center, EXPLOSION_RADIUS, CollisionFilter.Default, owner, ref hits);
 
         foreach (DistanceHit hit in hits)
         {

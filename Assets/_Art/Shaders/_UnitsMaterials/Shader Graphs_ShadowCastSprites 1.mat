@@ -52,6 +52,8 @@ Material:
     - _Cull: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _FixedOffset: 0.45
+    - _Float: 3
     - _Metallic: 0
     - _QueueControl: 0
     - _QueueOffset: 33
@@ -64,12 +66,16 @@ Material:
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
+    - _Zise: 3
     - _uv1: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
     - _Color2: {r: 0, g: 0, b: 0, a: 1}
     - _Emission_Color: {r: 0, g: 0, b: 0, a: 1}
+    - _FixedOffset: {r: -0.18, g: 0, b: 0, a: 0}
+    - _FixedOffset_1: {r: 1, g: 0, b: 0, a: 0}
     - _MaskColor: {r: 0, g: 0, b: 0, a: 1}
+    - _PivotOffset: {r: 0, g: 0, b: 0, a: 0}
     - _SpecularColor: {r: 0.8490566, g: 0.8490566, b: 0.8490566, a: 1}
     - _SpriteUV: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

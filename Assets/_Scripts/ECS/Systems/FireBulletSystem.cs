@@ -22,10 +22,10 @@ public partial struct FireBulletSystem : ISystem
             .CreateCommandBuffer(state.WorldUnmanaged);
 
         foreach ((RefRO<LocalTransform> transform,
-                  RefRO<FireBulletEvent> fireBulletEvent,
+                  RefRO<RangeAttackEvent> fireBulletEvent,
                   RefRO<BulletSpellConfig> spellConfig,
                   Entity entity) in
-            SystemAPI.Query<RefRO<LocalTransform>, RefRO<FireBulletEvent>, RefRO<BulletSpellConfig>>()
+            SystemAPI.Query<RefRO<LocalTransform>, RefRO<RangeAttackEvent>, RefRO<BulletSpellConfig>>()
                 .WithEntityAccess())
         {
             Entity bulletPrefab = SystemAPI.HasComponent<PlayerTag>(entity)
@@ -47,7 +47,7 @@ public partial struct FireBulletSystem : ISystem
             ecb.SetComponent(orb, LocalTransform.FromPosition(spawnPos));
             ecb.SetComponent(orb, prefabConfig);
 
-            SystemAPI.SetComponentEnabled<FireBulletEvent>(entity, false);
+            SystemAPI.SetComponentEnabled<RangeAttackEvent>(entity, false);
         }
     }
 }

@@ -27,6 +27,7 @@ public class EnemyAuthoring : MonoBehaviour
 
     [Header("Melee Attack")]
     public float attackRange       = 1.5f;
+    [Tooltip("If 0, hits only the target")]
     public float attackHitRadius   = 1f;
     public float attackDamage      = 3f;
     public float attackKnockback   = 20f;
@@ -112,8 +113,8 @@ public class EnemyAuthoring : MonoBehaviour
                 recovery          = authoring.rangeAttackRecovery,
             });
             AddComponent(entity, new BulletSpellConfig { fireAngle = authoring.bulletFireAngle });
-            AddComponent(entity, new FireBulletEvent());
-            SetComponentEnabled<FireBulletEvent>(entity, false);
+            AddComponent(entity, new RangeAttackEvent());
+            SetComponentEnabled<RangeAttackEvent>(entity, false);
 
             AddComponent(entity, new WanderState());
             AddComponent(entity, new DeathState
@@ -125,7 +126,7 @@ public class EnemyAuthoring : MonoBehaviour
             SetComponentEnabled<DeathState>       (entity, false);
             SetComponentEnabled<WanderState>     (entity, true);
 
-            AddComponent(entity, new FSMState { current = TypeManager.GetTypeIndex<WanderState>(), stateDuration = -1 });
+            AddComponent(entity, new FSMState { initialState = TypeManager.GetTypeInfo(TypeManager.GetTypeIndex<WanderState>()).StableTypeHash, stateDuration = -1 });
             AddComponent(entity, new FSMBlackBoard());
             AddBuffer<ChangeStateRequest>(entity);
             SetComponentEnabled<ChangeStateRequest>(entity, false);

@@ -7,7 +7,7 @@ public static class AttackActions
 {
 
     public const int MAX_ACUMULATED_DAMAGE = 100;
-    public static void QueryHits(
+    public static void CreateAndQueryCircleCollider(
         in CollisionWorld collisionWorld,
         float3 center,
         float radius,
@@ -17,6 +17,25 @@ public static class AttackActions
     {
         hits.Clear();
         collisionWorld.OverlapSphere(center, radius, ref hits, filter);
+
+        for (int i = hits.Length - 1; i >= 0; i--)
+        {
+            if (hits[i].Entity == attacker)
+                hits.RemoveAtSwapBack(i);
+        }
+    }
+
+    public static void CreateAndQueryBoxCollider(
+        in CollisionWorld collisionWorld,
+        float3 center,
+        quaternion rotation,
+        float3 size,
+        CollisionFilter filter,
+        Entity attacker,
+        ref NativeList<DistanceHit> hits)
+    {
+        hits.Clear();
+        collisionWorld.OverlapBox(center, rotation, size * 0.5f, ref hits, filter);
 
         for (int i = hits.Length - 1; i >= 0; i--)
         {

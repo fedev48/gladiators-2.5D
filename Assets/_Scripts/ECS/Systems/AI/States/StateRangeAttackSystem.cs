@@ -95,8 +95,8 @@ partial struct StateRangeAttackSystem : ISystem
             if (rangeAttack.ValueRO.shotFired) continue;
             rangeAttack.ValueRW.shotFired = true;
 
-            state.EntityManager.SetComponentData(entity, new FireBulletEvent { direction = math.normalizesafe(toTarget) });
-            state.EntityManager.SetComponentEnabled<FireBulletEvent>(entity, true);
+            state.EntityManager.SetComponentData(entity, new RangeAttackEvent { direction = math.normalizesafe(toTarget) });
+            state.EntityManager.SetComponentEnabled<RangeAttackEvent>(entity, true);
         }
     }
 

@@ -42,7 +42,9 @@ partial struct StateTransitionSystem : ISystem
         {
             foreach (StateTransition transition in transitions)
             {
-                if (transition.fromState != anyStateIndex && transition.fromState != fSMState.ValueRO.current) continue;
+                TypeIndex fromState = TypeManager.GetTypeIndexFromStableTypeHash(transition.fromState);
+
+                if (fromState != anyStateIndex && fromState != fSMState.ValueRO.current) continue;
 
                 if (!CheckConditions(transition,
                                      fSMState.ValueRO,
@@ -53,7 +55,12 @@ partial struct StateTransitionSystem : ISystem
                                      collisionWorld,
                                      colliderLookup)) continue;
 
-                requests.Add(new ChangeStateRequest { targetState = transition.toState, priority = transition.priority });
+                // requests.Add(new ChangeStateRequest { targetState = transition.toState, priority = transition.priority });
+                requests.Add(new ChangeStateRequest
+                {
+                    targetState = TypeManager.GetTypeIndexFromStableTypeHash(transition.toState),
+                    priority    = transition.priority
+                });
                 SystemAPI.SetBufferEnabled<ChangeStateRequest>(entity, true);
             }
         }
@@ -69,6 +76,7 @@ partial struct StateTransitionSystem : ISystem
         in CollisionWorld collisionWorld,
         in ComponentLookup<PhysicsCollider> colliderLookup)
     {
+        //this function checks if has the condition AND meets the criteria to trigger transition
         StateCondition conditions = transition.conditions;
 
         if (Has(conditions, StateCondition.StateFinished)      && !StateFinished(fSMState))                                                          return false;

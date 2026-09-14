@@ -80,8 +80,20 @@ public partial class InputReaderSystem : SystemBase
             foreach ((RefRO<BulletSpellConfig> _, Entity entity) in
                 SystemAPI.Query<RefRO<BulletSpellConfig>>().WithEntityAccess().WithAll<PlayerTag>())
             {
-                EntityManager.SetComponentData(entity, new FireBulletEvent { direction = lastInputDirection });
-                EntityManager.SetComponentEnabled<FireBulletEvent>(entity, true);
+                EntityManager.SetComponentData(entity, new RangeAttackEvent { direction = lastInputDirection });
+                EntityManager.SetComponentEnabled<RangeAttackEvent>(entity, true);
+            }
+        }
+
+        if (inputSystem.Player.MeleeAttack.WasPressedThisFrame())
+        {
+            foreach ((RefRO<PlayerTag> _, Entity entity) in
+                SystemAPI.Query<RefRO<PlayerTag>>().WithEntityAccess().WithAll<PlayerTag>())
+            {
+                if (EntityManager.IsComponentEnabled<MeleeAttackEvent>(entity)) continue;
+
+                EntityManager.SetComponentData(entity, new MeleeAttackEvent { direction = lastInputDirection });
+                EntityManager.SetComponentEnabled<MeleeAttackEvent>(entity, true);
             }
         }
 

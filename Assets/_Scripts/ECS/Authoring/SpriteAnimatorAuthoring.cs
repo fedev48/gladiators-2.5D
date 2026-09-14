@@ -63,11 +63,11 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
                     });
                     if (target.frames != null)
                     {
-                        float2 po = (float2)authoring.flipPivotOffset;
+                        float2 pivot = new float2(-authoring.flipPivotOffset.x, authoring.flipPivotOffset.y);
                         foreach (var sprite in target.frames)
                         {
                             float4 uv = SpriteToUV(sprite);
-                            frameBuffer.Add(new SpriteFrameElement { uv = new float4(uv.x + uv.z + po.x, uv.y + po.y, -uv.z, uv.w) });
+                            frameBuffer.Add(new SpriteFrameElement { uv = new float4(uv.x + uv.z, uv.y, -uv.z, uv.w), pivot = pivot });
                         }
                     }
                     frameOffset += frameCount;
@@ -94,6 +94,7 @@ public class SpriteAnimatorAuthoring : MonoBehaviour
             }
 
             AddComponent(entity, new SpriteUVRect { value = frameBuffer.Length > 0 ? frameBuffer[0].uv : default });
+            AddComponent(entity, new SpritePivotOffset { value = frameBuffer.Length > 0 ? new float4(frameBuffer[0].pivot, 0f, 0f) : default });
             AddComponent(entity, new SpriteMaskColor { value = new float4(0f, 0f, 0f, 1f) });
             AddComponent(entity, new DamageAnimation());
             SetComponentEnabled<DamageAnimation>(entity, false);
@@ -210,10 +211,17 @@ public struct AnimationClipData : IBufferElementData
 public struct SpriteFrameElement : IBufferElementData
 {
     public float4 uv;
+    public float2 pivot;
 }
 
 [MaterialProperty("_SpriteUV")]
 public struct SpriteUVRect : IComponentData
+{
+    public float4 value;
+}
+
+[MaterialProperty("_PivotOffset")]
+public struct SpritePivotOffset : IComponentData
 {
     public float4 value;
 }

@@ -86,8 +86,8 @@ MonoBehaviour:
   separationRadius: 1
   separationStrenght: 5
   knockbackMultiplier: 1
-  knockbackDurationMultiplier: 1
-  health: 15
+  knockbackDurationMultiplier: 0.1
+  health: 70
   targetSearchRadius: 20
   targetSearchRadiuosForSurrounded: 2
   targetScanInterval: 0.1
@@ -98,7 +98,7 @@ MonoBehaviour:
   attackerDamageDecay: 2
   attackRange: 1.5
   attackHitRadius: 0
-  attackDamage: 3
+  attackDamage: 15
   attackKnockback: 0
   attackRecovery: 0
 --- !u!114 &6278146624199756975
@@ -482,7 +482,7 @@ MonoBehaviour:
     flip: 1
   initialAnimation: 0
   currentAnimation: 0
-  flipPivotOffset: {x: -0.004, y: 0}
+  flipPivotOffset: {x: 0, y: 0}
   cameraYAngle: -135
   fourDirections: 0
   debugOverride: 0

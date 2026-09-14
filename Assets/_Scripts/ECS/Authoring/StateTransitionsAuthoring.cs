@@ -27,8 +27,12 @@ public class StateTransitionsAuthoring : MonoBehaviour
 
                 buffer.Add(new StateTransition
                 {
-                    fromState        = TypeManager.GetTypeIndex(fromType),
-                    toState          = TypeManager.GetTypeIndex(toType),
+                    //baking runs in the editor, so a TypeIndex baked here pointed at a different type once loaded in the
+                    //player build. StableTypeHash is derived from the type itself and matches on both sides.
+                    // fromState     = TypeManager.GetTypeIndex(fromType),
+                    // toState       = TypeManager.GetTypeIndex(toType),
+                    fromState        = TypeManager.GetTypeInfo(TypeManager.GetTypeIndex(fromType)).StableTypeHash,
+                    toState          = TypeManager.GetTypeInfo(TypeManager.GetTypeIndex(toType)).StableTypeHash,
                     conditions       = entry.conditions,
                     rangeThreshold   = entry.rangeThreshold,
                     healthThreshold  = entry.healthThreshold,
@@ -70,10 +74,13 @@ public enum StateCondition
 }
 
 //conditions within one entry are AND. two entries sharing fromState are OR
+//states are stored as StableTypeHash: TypeIndex is a runtime value and does not survive baking into a player build
 public struct StateTransition : IBufferElementData
 {
-    public TypeIndex      fromState;
-    public TypeIndex      toState;
+    // public TypeIndex   fromState;
+    // public TypeIndex   toState;
+    public ulong          fromState;
+    public ulong          toState;
     public StateCondition conditions;
     public float          rangeThreshold;  
     public float          healthThreshold;  

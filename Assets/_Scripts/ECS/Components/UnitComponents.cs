@@ -48,7 +48,7 @@ public struct FollowState           : IFSMState {}
 public struct StunnedState          : IFSMState {}
 public struct FleeState             : IFSMState {}
 public struct AnyState              : IFSMState {}
-public struct DeathState             : IFSMState
+public struct DeathState            : IFSMState
 {
     //animation
     public float elapsed;
@@ -119,6 +119,7 @@ public struct FSMState : IComponentData
 {
     public TypeIndex current;
     public TypeIndex previous;
+    public ulong initialState;
     public float timeInState;
     public float stateDuration; //written by the running state system. -1 means the state does not end by time
 }

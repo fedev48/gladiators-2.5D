@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: RelicGuardian1
+  m_Name: EnemyRange
   m_Shader: {fileID: -6465566751694194690, guid: 22e6088d0594043cababdd9ae7a69e7e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -61,9 +61,12 @@ Material:
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
+    - _Zise: 1
     m_Colors:
     - _Emission_Color: {r: 0, g: 0, b: 0, a: 1}
+    - _FixedOffset: {r: 0, g: 0, b: 0, a: 0}
     - _MaskColor: {r: 0, g: 0, b: 0, a: 1}
+    - _PivotOffset: {r: 0, g: 0, b: 0, a: 0}
     - _SpecularColor: {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
     - _SpriteUV: {r: 0, g: 0, b: 1, a: 1}
   m_BuildTextureStacks: []

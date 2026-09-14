@@ -104,7 +104,9 @@ public partial struct SpriteAnimationSystem : ISystem
                 }
             }
 
-            uvRef.ValueRW.value = frames[clip.startIndex + animState.currentFrame].uv;
+            SpriteFrameElement frame = frames[clip.startIndex + animState.currentFrame];
+            uvRef.ValueRW.value = frame.uv;
+            SystemAPI.SetComponent(entity, new SpritePivotOffset { value = new float4(frame.pivot, 0f, 0f) });
         }
     }
 

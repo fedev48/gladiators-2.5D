@@ -15,6 +15,7 @@ public class PlayerAuthoring : MonoBehaviour
     [SerializeField] float knockbackMultiplier = 1f;
     [SerializeField] float knockbackDurationMultiplier = 1f;
     [SerializeField] int health;
+    [SerializeField] GameObject meleeHitbox;
 
     public class Baker : Baker<PlayerAuthoring>
     {
@@ -27,13 +28,16 @@ public class PlayerAuthoring : MonoBehaviour
             AddComponent(entity, new Team { value = Teams.ALLY });
             AddComponent(entity, new UnitMovementAnimTag());
             Entity visualEntity = GetEntity(authoring.GetComponentInChildren<SpriteAnimatorAuthoring>(), TransformUsageFlags.Dynamic);
-            
+
             AddComponent(entity, new AffectedByGrativy());
-            
+
             AddComponent(entity, new SummonSkeletonEvent());
             AddComponent(entity, new BulletSpellConfig { fireAngle = authoring.bulletFireAngle });
-            AddComponent(entity, new FireBulletEvent());
-            SetComponentEnabled<FireBulletEvent>(entity, false);
+            AddComponent(entity, new RangeAttackEvent());
+            AddComponent(entity, new MeleeAttackEvent());
+            SetComponentEnabled<RangeAttackEvent>(entity, false);
+            SetComponentEnabled<MeleeAttackEvent>(entity, false);
+            AddComponent(entity, new MeleeHitbox { value = GetEntity(authoring.meleeHitbox, TransformUsageFlags.Dynamic) });
             AddComponent(entity, new SkeletonSpellConfig
             {
                 minRadius    = authoring.skeletonSpawnMinRadius,
@@ -51,7 +55,7 @@ public class PlayerAuthoring : MonoBehaviour
                 multiplier      = authoring.knockbackMultiplier,
                 durationMultiplier = authoring.knockbackDurationMultiplier
             });
-            
+
             //Movement components
             AddComponent(entity, new CurrentVelocity {});
 
@@ -79,7 +83,9 @@ public struct SkeletonSpellConfig : IComponentData
 public struct PlayerTag           : IComponentData {}
 public struct BulletSpellConfig   : IComponentData { public float fireAngle; }
 public struct SummonSkeletonEvent : IComponentData, IEnableableComponent { public int count; }
-public struct FireBulletEvent     : IComponentData, IEnableableComponent { public float3 direction; }
+public struct RangeAttackEvent     : IComponentData, IEnableableComponent { public float3 direction; }
+public struct MeleeAttackEvent     : IComponentData, IEnableableComponent { public float3 direction; public float elapsed; public float hitTime; public float duration; public bool hitLanded; }
+public struct MeleeHitbox          : IComponentData { public Entity value; }
 
 [WorldSystemFilter(WorldSystemFilterFlags.BakingSystem)]
 public partial struct PlayerFreezeRotationBakingSystem : ISystem

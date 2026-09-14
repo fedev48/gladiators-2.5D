@@ -58,6 +58,7 @@ Material:
     - _FogColor: 6.19
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _XRMotionVectorsPass: 1
     m_Colors:
     - _Color_1: {r: 0, g: 0, b: 0, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 0.13333334}
